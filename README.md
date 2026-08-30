@@ -11,11 +11,21 @@ native previews, and an example catalog. The first components will be
 
 ## Requirements
 
-- Flutter 3.47.0 or newer
-- Dart 3.13.0 or newer
+- [FVM](https://fvm.app/) (the local development environment uses Homebrew FVM
+  4.3.0)
+- Flutter 3.47.0, pinned by [`.fvmrc`](.fvmrc)
+- Dart 3.13.0 or newer (provided by the pinned Flutter SDK)
 
-Android, iOS, and web are first-class targets. The package remains portable to
-desktop, but desktop is not part of the initial compatibility matrix.
+Install FVM with Homebrew if needed, then install the repository SDK:
+
+```sh
+brew install fvm
+fvm install
+```
+
+Use `fvm flutter ...` for all Flutter commands in this repository. Android,
+iOS, and web are first-class targets. The package remains portable to desktop,
+but desktop is not part of the initial compatibility matrix.
 
 ## Installation
 
@@ -91,15 +101,18 @@ state indicator.
 
 ```sh
 cd example
-flutter run -d chrome
+fvm flutter run -d chrome
 ```
 
-Run native Flutter Widget Previewer from the example project:
+Run native Flutter Widget Previewer from the repository root:
 
 ```sh
-cd example
-flutter widget-preview start
+fvm flutter widget-preview start
 ```
+
+IDE users should configure the Flutter SDK as `<repo>/.fvm/flutter_sdk`; VS Code
+can use the committed
+[`.vscode/settings.json`](.vscode/settings.json) configuration.
 
 ## Project documentation
 

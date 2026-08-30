@@ -19,17 +19,34 @@ Nemo UI uses GitHub Flow:
 Supported branch types are `feat`, `fix`, `docs`, `chore`, and `refactor`.
 Reserve `hotfix` for published-release emergencies.
 
+## Local development
+
+The repository pins Flutter 3.47.0 in [`.fvmrc`](.fvmrc). Install the SDK with
+FVM before running checks:
+
+```sh
+fvm install
+```
+
+Use `fvm flutter ...` for every Flutter command. The local development
+environment uses Homebrew FVM 4.3.0. Android Studio and IntelliJ users should
+select `<repo>/.fvm/flutter_sdk` as the Flutter SDK. VS Code reads the committed
+`.vscode/settings.json`, which sets `dart.flutterSdkPath` to `.fvm/flutter_sdk`.
+
 ## Local checks
 
 Run the same checks enforced by continuous integration:
 
 ```sh
-dart format --output=none --set-exit-if-changed .
-flutter analyze
-flutter test --coverage
-flutter pub publish --dry-run
-(cd example && flutter test && flutter build web)
+fvm dart format --output=none --set-exit-if-changed .
+fvm flutter analyze
+fvm flutter test --coverage
+fvm flutter pub publish --dry-run
+(cd example && fvm flutter test && fvm flutter build web)
 ```
+
+Run the example in Chrome with `cd example && fvm flutter run -d chrome`. Run
+native previews from the repository root with `fvm flutter widget-preview start`.
 
 The minimum supported Flutter version is 3.47.0.
 
