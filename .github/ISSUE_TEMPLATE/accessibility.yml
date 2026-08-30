@@ -1,0 +1,33 @@
+name: Accessibility issue
+description: Report an accessibility, semantics, contrast, keyboard, or motion problem.
+title: "fix(a11y): "
+labels:
+  - accessibility
+  - bug
+body:
+  - type: textarea
+    id: barrier
+    attributes:
+      label: Accessibility barrier
+      description: Describe who is affected and which task is blocked or difficult.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and assistive technology
+      description: Include platform, input mode, accessibility settings, and steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected accessible behavior
+    validations:
+      required: true
+  - type: input
+    id: flutter-version
+    attributes:
+      label: Flutter version
+    validations:
+      required: true

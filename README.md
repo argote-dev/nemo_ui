@@ -1,0 +1,116 @@
+# Nemo UI
+
+Nemo UI is an accessible, modern neumorphic design system for Flutter. It uses
+soft depth as a tactile cue while preserving explicit contrast, focus,
+semantics, and reduced-motion behavior.
+
+The current `0.0.1` release is the foundation bootstrap. It provides design
+tokens, dynamic themes, scoped asset resolution, localization, semantic motion,
+native previews, and an example catalog. The first components will be
+`NemoSurface`, `NemoButton`, and `NemoSwitch`.
+
+## Requirements
+
+- Flutter 3.47.0 or newer
+- Dart 3.13.0 or newer
+
+Android, iOS, and web are first-class targets. The package remains portable to
+desktop, but desktop is not part of the initial compatibility matrix.
+
+## Installation
+
+Until the first pub.dev release, depend on the Git repository:
+
+```yaml
+dependencies:
+  nemo_ui:
+    git:
+      url: git@github.com:argote-dev/nemo_ui.git
+```
+
+Then import the single curated entry point:
+
+```dart
+import 'package:nemo_ui/nemo_ui.dart';
+```
+
+Files under `lib/src` are private implementation details.
+
+## Configure a theme
+
+Nemo UI integrates with Flutter through an immutable `ThemeExtension`. The
+host application owns theme state and may build light, dark, or high-contrast
+tokens from a brand seed.
+
+```dart
+final nemoTheme = NemoThemeData.light(
+  seedColor: const Color(0xFF4F6EF7),
+);
+
+MaterialApp(
+  theme: ThemeData(
+    extensions: <ThemeExtension<dynamic>>[nemoTheme],
+  ),
+  localizationsDelegates: NemoLocalizations.localizationsDelegates,
+  supportedLocales: NemoLocalizations.supportedLocales,
+  localeResolutionCallback: NemoLocales.resolve,
+  home: const HomePage(),
+);
+```
+
+Read tokens within a widget with `NemoTheme.of(context)`. Theme factories accept
+group-level overrides, and every token group supports immutable `copyWith`
+customization.
+
+## Provide dynamic assets
+
+Nemo UI uses semantic asset slots instead of component-owned paths. Inject a
+`NemoAssetResolver` around the subtree that needs host branding:
+
+```dart
+NemoAssetScope(
+  resolver: const BrandAssetResolver(),
+  child: const ProductExperience(),
+);
+```
+
+The resolver may return host-provided image providers or widgets. Networking,
+caching, and remote-asset policy remain application responsibilities.
+
+## Motion and accessibility
+
+Components consume semantic motion tokens instead of hard-coded durations.
+`NemoMotionTokens.resolveFor(context)` automatically selects reduced motion
+when `MediaQuery.disableAnimations` is enabled.
+
+Every interactive component must expose explicit focus, semantics, keyboard,
+contrast, text-scaling, and reduced-motion behavior. Depth is never the only
+state indicator.
+
+## Run the catalog and previews
+
+```sh
+cd example
+flutter run -d chrome
+```
+
+Run native Flutter Widget Previewer from the example project:
+
+```sh
+cd example
+flutter widget-preview start
+```
+
+## Project documentation
+
+- [Foundation architecture](doc/architecture/foundation.md)
+- [Motion and micro-interaction policy](doc/motion.md)
+- [Quality gates](doc/quality-gates.md)
+- [Component playbook template](doc/components/_template.md)
+- [Foundation research](doc/research/flutter-design-system-foundation.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+
+## License
+
+Nemo UI is available under the [MIT License](LICENSE).

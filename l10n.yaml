@@ -1,0 +1,9 @@
+arb-dir: l10n
+template-arb-file: nemo_en.arb
+output-dir: lib/src/l10n/generated
+output-localization-file: nemo_localizations.dart
+output-class: NemoLocalizations
+nullable-getter: false
+preferred-supported-locales:
+  - en
+  - es

@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Flutter ${{ matrix.flutter-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flutter-version:
+          - 3.47.0
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: true
+
+      - name: Install package dependencies
+        run: flutter pub get
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze package
+        run: flutter analyze
+
+      - name: Test package with coverage
+        run: flutter test --coverage
+
+      - name: Install example dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Test example
+        working-directory: example
+        run: flutter test
+
+      - name: Build example for web
+        working-directory: example
+        run: flutter build web
+
+      - name: Validate package publication
+        run: flutter pub publish --dry-run
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: coverage-flutter-${{ matrix.flutter-version }}
+          path: coverage/lcov.info
+          if-no-files-found: warn

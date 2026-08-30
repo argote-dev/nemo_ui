@@ -1,0 +1,9 @@
+{
+  "@@locale": "es",
+  "loading": "Cargando",
+  "retry": "Reintentar",
+  "error": "Algo salió mal",
+  "selected": "Seleccionado",
+  "on": "Activado",
+  "off": "Desactivado"
+}

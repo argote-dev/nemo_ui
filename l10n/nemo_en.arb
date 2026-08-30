@@ -1,0 +1,15 @@
+{
+  "@@locale": "en",
+  "loading": "Loading",
+  "@loading": {"description": "Default label shown while a system-owned action is loading."},
+  "retry": "Retry",
+  "@retry": {"description": "Default label for retry actions."},
+  "error": "Something went wrong",
+  "@error": {"description": "Default generic error message."},
+  "selected": "Selected",
+  "@selected": {"description": "Default selected-state label."},
+  "on": "On",
+  "@on": {"description": "Default enabled-state label."},
+  "off": "Off",
+  "@off": {"description": "Default disabled-state label."}
+}

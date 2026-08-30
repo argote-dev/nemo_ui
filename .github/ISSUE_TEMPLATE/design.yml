@@ -1,0 +1,31 @@
+name: Design proposal
+description: Propose a visual-language, token, motion, or architectural design change.
+title: "design: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and goal
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the design tree, affected contracts, and examples.
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Trade-offs and alternatives
+    validations:
+      required: true
+  - type: textarea
+    id: accessibility
+    attributes:
+      label: Accessibility impact
+    validations:
+      required: true

@@ -1,0 +1,23 @@
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    always_declare_return_types: true
+    always_put_required_named_parameters_first: true
+    avoid_dynamic_calls: true
+    avoid_print: true
+    directives_ordering: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    public_member_api_docs: true
+    require_trailing_commas: true
+    use_super_parameters: true
