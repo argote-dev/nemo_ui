@@ -88,6 +88,48 @@ void main() {
       expect(calls, 0);
     });
 
+    testWidgets('preserves semantics, bounds, and keyboard activation in RTL', (
+      WidgetTester tester,
+    ) async {
+      final List<bool> calls = <bool>[];
+      final FocusNode focusNode = FocusNode();
+      const String label = 'الإشعارات';
+      await tester.pumpWidget(
+        _host(
+          NemoSwitch(
+            value: false,
+            focusNode: focusNode,
+            onChanged: calls.add,
+            child: const Text(label),
+          ),
+          textDirection: TextDirection.rtl,
+        ),
+      );
+
+      final Rect switchBounds = tester.getRect(find.byType(NemoSwitch));
+      expect(switchBounds.contains(tester.getCenter(find.text(label))), isTrue);
+      expect(
+        tester.getSemantics(find.byType(NemoSwitch)),
+        matchesSemantics(
+          hasToggledState: true,
+          isToggled: false,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          label: label,
+          value: 'Off',
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+      expect(calls, <bool>[true]);
+    });
+
     testWidgets('builds in light, dark, and high-contrast themes', (
       tester,
     ) async {
@@ -318,6 +360,7 @@ Widget _host(
   TextScaler textScaler = TextScaler.noScaling,
   bool disableAnimations = false,
   NemoThemeData? theme,
+  TextDirection textDirection = TextDirection.ltr,
 }) => MaterialApp(
   theme: ThemeData(
     extensions: <ThemeExtension<dynamic>>[theme ?? NemoThemeData.light()],
@@ -328,7 +371,7 @@ Widget _host(
   builder: (context, child) => MediaQuery(
     data: MediaQuery.of(context)
         .copyWith(textScaler: textScaler, disableAnimations: disableAnimations),
-    child: child!,
+    child: Directionality(textDirection: textDirection, child: child!),
   ),
   home: Scaffold(body: Center(child: child)),
 );

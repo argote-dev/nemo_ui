@@ -99,129 +99,136 @@ class _NemoButtonState extends State<NemoButton> {
         ? NemoLocalizations.of(context).loading
         : widget.semanticLabel;
 
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: label,
-      liveRegion: widget.isLoading,
-      onTap: enabled ? _activate : null,
-      child: Focus(
-        focusNode: widget.focusNode,
-        autofocus: widget.autofocus,
-        canRequestFocus: enabled,
-        skipTraversal: !enabled,
-        onFocusChange: (bool value) {
-          if (_focused != value) setState(() => _focused = value);
-        },
-        onKeyEvent: _handleKey,
-        child: MouseRegion(
-          cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
-          onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
-          onExit: enabled ? (_) => setState(() => _hovered = false) : null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: enabled ? _activate : null,
-            onTapDown: enabled ? (_) => _setPressed(true) : null,
-            onTapUp: enabled ? (_) => _setPressed(false) : null,
-            onTapCancel: enabled ? () => _setPressed(false) : null,
-            child: TweenAnimationBuilder<NemoButtonStateStyle>(
-              tween: _NemoButtonStyleTween(
-                end: theme.components.button.styleFor(state),
-              ),
-              duration: motion.quick,
-              curve: motion.standardCurve,
-              builder:
-                  (
-                    BuildContext context,
-                    NemoButtonStateStyle style,
-                    Widget? child,
-                  ) {
-                    return CustomPaint(
-                      painter: _NemoButtonPainter(
-                        theme: theme,
-                        style: style,
-                        focused: _focused,
-                        enabled: enabled,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: theme.components.controlMinHeight,
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: label,
+        liveRegion: widget.isLoading,
+        onTap: enabled ? _activate : null,
+        child: Focus(
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          canRequestFocus: enabled,
+          skipTraversal: !enabled,
+          onFocusChange: (bool value) {
+            if (_focused != value) setState(() => _focused = value);
+          },
+          onKeyEvent: _handleKey,
+          child: MouseRegion(
+            cursor: enabled
+                ? SystemMouseCursors.click
+                : SystemMouseCursors.basic,
+            onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+            onExit: enabled ? (_) => setState(() => _hovered = false) : null,
+            child: GestureDetector(
+              excludeFromSemantics: true,
+              behavior: HitTestBehavior.opaque,
+              onTap: enabled ? _activate : null,
+              onTapDown: enabled ? (_) => _setPressed(true) : null,
+              onTapUp: enabled ? (_) => _setPressed(false) : null,
+              onTapCancel: enabled ? () => _setPressed(false) : null,
+              child: TweenAnimationBuilder<NemoButtonStateStyle>(
+                tween: _NemoButtonStyleTween(
+                  end: theme.components.button.styleFor(state),
+                ),
+                duration: motion.quick,
+                curve: motion.standardCurve,
+                builder:
+                    (
+                      BuildContext context,
+                      NemoButtonStateStyle style,
+                      Widget? child,
+                    ) {
+                      return CustomPaint(
+                        painter: _NemoButtonPainter(
+                          theme: theme,
+                          style: style,
+                          focused: _focused,
+                          enabled: enabled,
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal:
-                                theme.components.controlHorizontalPadding,
-                            vertical: theme.foundation.space8,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: theme.components.controlMinHeight,
                           ),
-                          child: Center(
-                            child: IconTheme(
-                              data: IconThemeData(
-                                color: enabled
-                                    ? theme.semantic.onPrimary
-                                    : theme.semantic.mutedForeground,
-                              ),
-                              child: DefaultTextStyle.merge(
-                                style: TextStyle(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  theme.components.controlHorizontalPadding,
+                              vertical: theme.foundation.space8,
+                            ),
+                            child: Center(
+                              child: IconTheme(
+                                data: IconThemeData(
                                   color: enabled
                                       ? theme.semantic.onPrimary
                                       : theme.semantic.mutedForeground,
                                 ),
-                                child: widget.isLoading
-                                    ? ExcludeSemantics(
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            SizedBox(
-                                              width: theme
-                                                  .components
-                                                  .button
-                                                  .progressIndicatorSize,
-                                              height: theme
-                                                  .components
-                                                  .button
-                                                  .progressIndicatorSize,
-                                              child:
-                                                  MediaQuery.disableAnimationsOf(
-                                                    context,
-                                                  )
-                                                  ? Icon(
-                                                      Icons.hourglass_top,
-                                                      size: theme
-                                                          .components
-                                                          .button
-                                                          .progressIndicatorSize,
-                                                      color: theme
-                                                          .semantic
-                                                          .onPrimary,
+                                child: DefaultTextStyle.merge(
+                                  style: TextStyle(
+                                    color: enabled
+                                        ? theme.semantic.onPrimary
+                                        : theme.semantic.mutedForeground,
+                                  ),
+                                  child: widget.isLoading
+                                      ? ExcludeSemantics(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              SizedBox(
+                                                width: theme
+                                                    .components
+                                                    .button
+                                                    .progressIndicatorSize,
+                                                height: theme
+                                                    .components
+                                                    .button
+                                                    .progressIndicatorSize,
+                                                child:
+                                                    MediaQuery.disableAnimationsOf(
+                                                      context,
                                                     )
-                                                  : CircularProgressIndicator(
-                                                      strokeWidth: theme
-                                                          .components
-                                                          .button
-                                                          .progressIndicatorStrokeWidth,
-                                                      color: theme
-                                                          .semantic
-                                                          .onPrimary,
-                                                    ),
-                                            ),
-                                            SizedBox(
-                                              width: theme.foundation.space8,
-                                            ),
-                                            Text(
-                                              NemoLocalizations.of(context)
-                                                  .loading,
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : widget.child,
+                                                    ? Icon(
+                                                        Icons.hourglass_top,
+                                                        size: theme
+                                                            .components
+                                                            .button
+                                                            .progressIndicatorSize,
+                                                        color: theme
+                                                            .semantic
+                                                            .onPrimary,
+                                                      )
+                                                    : CircularProgressIndicator(
+                                                        strokeWidth: theme
+                                                            .components
+                                                            .button
+                                                            .progressIndicatorStrokeWidth,
+                                                        color: theme
+                                                            .semantic
+                                                            .onPrimary,
+                                                      ),
+                                              ),
+                                              SizedBox(
+                                                width: theme.foundation.space8,
+                                              ),
+                                              Text(
+                                                NemoLocalizations.of(context)
+                                                    .loading,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : widget.semanticLabel == null
+                                      ? widget.child
+                                      : ExcludeSemantics(child: widget.child),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+              ),
             ),
           ),
         ),

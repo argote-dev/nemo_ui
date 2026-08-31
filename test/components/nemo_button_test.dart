@@ -63,11 +63,35 @@ void main() {
           hasEnabledState: true,
           isEnabled: true,
           hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
           label: 'Save changes',
         ),
       );
       await tester.tap(find.text('Disabled'));
       expect(calls, 0);
+    });
+
+    testWidgets('uses caller text as its accessible name', (
+      WidgetTester tester,
+    ) async {
+      const String label = 'Save changes';
+      await tester.pumpWidget(
+        _host(NemoButton(onPressed: () {}, child: const Text(label))),
+      );
+
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(label)),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          label: label,
+        ),
+      );
     });
 
     testWidgets('uses localized system loading copy and blocks activation', (
@@ -119,6 +143,45 @@ void main() {
         greaterThanOrEqualTo(48),
       );
       expect(find.text('A deliberately long button label'), findsOneWidget);
+    });
+
+    testWidgets('preserves semantics, bounds, and keyboard activation in RTL', (
+      WidgetTester tester,
+    ) async {
+      var calls = 0;
+      final FocusNode focusNode = FocusNode();
+      const String label = 'حفظ التغييرات';
+      await tester.pumpWidget(
+        _host(
+          NemoButton(
+            focusNode: focusNode,
+            onPressed: () => calls++,
+            child: const Text(label),
+          ),
+          textDirection: TextDirection.rtl,
+        ),
+      );
+
+      final Rect buttonBounds = tester.getRect(find.byType(NemoButton));
+      expect(buttonBounds.contains(tester.getCenter(find.text(label))), isTrue);
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(label)),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          label: label,
+        ),
+      );
+
+      focusNode.requestFocus();
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+      expect(calls, 1);
     });
 
     testWidgets('reduced motion settles press feedback immediately', (
@@ -286,6 +349,7 @@ Widget _host(
   Locale locale = const Locale('en'),
   bool disableAnimations = false,
   TextScaler textScaler = TextScaler.noScaling,
+  TextDirection textDirection = TextDirection.ltr,
 }) {
   final NemoThemeData theme = NemoThemeData.light();
   return MaterialApp(
@@ -302,7 +366,10 @@ Widget _host(
         disableAnimations: disableAnimations,
         textScaler: textScaler,
       ),
-      child: Scaffold(backgroundColor: theme.semantic.surface, body: child),
+      child: Directionality(
+        textDirection: textDirection,
+        child: Scaffold(backgroundColor: theme.semantic.surface, body: child),
+      ),
     ),
   );
 }

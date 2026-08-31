@@ -169,6 +169,7 @@ can use the committed
 - [Foundation architecture](doc/architecture/foundation.md)
 - [Motion and micro-interaction policy](doc/motion.md)
 - [Quality gates](doc/quality-gates.md)
+- [Pilot accessibility audit](doc/accessibility-audit.md)
 - [NemoSurface playbook](doc/components/nemo-surface.md)
 - [NemoButton playbook](doc/components/nemo-button.md)
 - [NemoSwitch playbook](doc/components/nemo-switch.md)
