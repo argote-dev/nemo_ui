@@ -198,8 +198,43 @@ class _FoundationPage extends StatelessWidget {
                 ),
             ],
           ),
+          const SizedBox(height: 24),
+          Text(
+            'NemoButton',
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: theme.semantic.foreground),
+          ),
+          const SizedBox(height: 12),
+          const _ButtonCatalog(),
         ],
       ),
+    );
+  }
+}
+
+class _ButtonCatalog extends StatefulWidget {
+  const _ButtonCatalog();
+
+  @override
+  State<_ButtonCatalog> createState() => _ButtonCatalogState();
+}
+
+class _ButtonCatalogState extends State<_ButtonCatalog> {
+  bool _loading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: <Widget>[
+        NemoButton(
+          onPressed: _loading ? null : () => setState(() => _loading = true),
+          isLoading: _loading,
+          child: const Text('Submit'),
+        ),
+        const NemoButton(onPressed: null, child: Text('Disabled')),
+      ],
     );
   }
 }

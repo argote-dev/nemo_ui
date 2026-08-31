@@ -405,6 +405,7 @@ final class NemoComponentTokens {
     required this.focusRingWidth,
     required this.outlineWidth,
     required this.surface,
+    required this.button,
   });
 
   /// The minimum interactive control height.
@@ -422,6 +423,9 @@ final class NemoComponentTokens {
   /// Visual contract for [NemoSurface].
   final NemoSurfaceTokens surface;
 
+  /// Visual contract for [NemoButton].
+  final NemoButtonTokens button;
+
   /// The standard component contract.
   static const NemoComponentTokens standard = NemoComponentTokens(
     controlMinHeight: 48,
@@ -429,6 +433,7 @@ final class NemoComponentTokens {
     focusRingWidth: 3,
     outlineWidth: 1,
     surface: NemoSurfaceTokens.standard,
+    button: NemoButtonTokens.standard,
   );
 
   /// The high-contrast component contract.
@@ -438,6 +443,7 @@ final class NemoComponentTokens {
     focusRingWidth: 3,
     outlineWidth: 2,
     surface: NemoSurfaceTokens.highContrast,
+    button: NemoButtonTokens.highContrast,
   );
 
   /// Creates a copy with selectively replaced component values.
@@ -447,6 +453,7 @@ final class NemoComponentTokens {
     double? focusRingWidth,
     double? outlineWidth,
     NemoSurfaceTokens? surface,
+    NemoButtonTokens? button,
   }) {
     return NemoComponentTokens(
       controlMinHeight: controlMinHeight ?? this.controlMinHeight,
@@ -455,6 +462,7 @@ final class NemoComponentTokens {
       focusRingWidth: focusRingWidth ?? this.focusRingWidth,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       surface: surface ?? this.surface,
+      button: button ?? this.button,
     );
   }
 
@@ -474,8 +482,329 @@ final class NemoComponentTokens {
       focusRingWidth: lerpDouble(a.focusRingWidth, b.focusRingWidth, t)!,
       outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
       surface: NemoSurfaceTokens.lerp(a.surface, b.surface, t),
+      button: NemoButtonTokens.lerp(a.button, b.button, t),
     );
   }
+}
+
+/// The component-level visual values for a Nemo primary button.
+@immutable
+final class NemoButtonTokens {
+  /// Creates visual values for each [NemoButton] state.
+  const NemoButtonTokens({
+    required this.resting,
+    required this.hovered,
+    required this.focused,
+    required this.pressed,
+    required this.disabled,
+    required this.loading,
+    required this.progressIndicatorSize,
+    required this.progressIndicatorStrokeWidth,
+  });
+
+  /// The default active visual treatment.
+  final NemoButtonStateStyle resting;
+
+  /// The mouse-hover visual treatment.
+  final NemoButtonStateStyle hovered;
+
+  /// The keyboard-focus visual treatment.
+  final NemoButtonStateStyle focused;
+
+  /// The active press visual treatment.
+  final NemoButtonStateStyle pressed;
+
+  /// The unavailable visual treatment.
+  final NemoButtonStateStyle disabled;
+
+  /// The system-owned loading visual treatment.
+  final NemoButtonStateStyle loading;
+
+  /// The progress affordance's square size.
+  final double progressIndicatorSize;
+
+  /// The stroke width for the animated progress affordance.
+  final double progressIndicatorStrokeWidth;
+
+  /// Default soft-neumorphic button values.
+  static const NemoButtonTokens standard = NemoButtonTokens(
+    resting: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 1,
+      shadowBlurMultiplier: 1,
+      shadowOpacity: .5,
+      outlineOpacity: .55,
+    ),
+    hovered: NemoButtonStateStyle(
+      foregroundBlend: .024,
+      shadowOffsetMultiplier: .94,
+      shadowBlurMultiplier: .94,
+      shadowOpacity: .55,
+      outlineOpacity: .6,
+    ),
+    focused: NemoButtonStateStyle(
+      foregroundBlend: .036,
+      shadowOffsetMultiplier: .9,
+      shadowBlurMultiplier: .9,
+      shadowOpacity: .55,
+      outlineOpacity: .65,
+    ),
+    pressed: NemoButtonStateStyle(
+      foregroundBlend: .12,
+      shadowOffsetMultiplier: .28,
+      shadowBlurMultiplier: .45,
+      shadowOpacity: .5,
+      outlineOpacity: .7,
+    ),
+    disabled: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: .8,
+    ),
+    loading: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: .8,
+    ),
+    progressIndicatorSize: 18,
+    progressIndicatorStrokeWidth: 2,
+  );
+
+  /// High-contrast values remove decorative shadows while retaining boundaries.
+  static const NemoButtonTokens highContrast = NemoButtonTokens(
+    resting: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    hovered: NemoButtonStateStyle(
+      foregroundBlend: .08,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    focused: NemoButtonStateStyle(
+      foregroundBlend: .1,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    pressed: NemoButtonStateStyle(
+      foregroundBlend: .16,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    disabled: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    loading: NemoButtonStateStyle(
+      foregroundBlend: 0,
+      shadowOffsetMultiplier: 0,
+      shadowBlurMultiplier: 0,
+      shadowOpacity: 0,
+      outlineOpacity: 1,
+    ),
+    progressIndicatorSize: 18,
+    progressIndicatorStrokeWidth: 2,
+  );
+
+  /// Returns the styling for a supported [NemoButtonState].
+  NemoButtonStateStyle styleFor(NemoButtonState state) => switch (state) {
+    NemoButtonState.resting => resting,
+    NemoButtonState.hovered => hovered,
+    NemoButtonState.focused => focused,
+    NemoButtonState.pressed => pressed,
+    NemoButtonState.disabled => disabled,
+    NemoButtonState.loading => loading,
+  };
+
+  /// Creates a copy with selectively replaced values.
+  NemoButtonTokens copyWith({
+    NemoButtonStateStyle? resting,
+    NemoButtonStateStyle? hovered,
+    NemoButtonStateStyle? focused,
+    NemoButtonStateStyle? pressed,
+    NemoButtonStateStyle? disabled,
+    NemoButtonStateStyle? loading,
+    double? progressIndicatorSize,
+    double? progressIndicatorStrokeWidth,
+  }) => NemoButtonTokens(
+    resting: resting ?? this.resting,
+    hovered: hovered ?? this.hovered,
+    focused: focused ?? this.focused,
+    pressed: pressed ?? this.pressed,
+    disabled: disabled ?? this.disabled,
+    loading: loading ?? this.loading,
+    progressIndicatorSize: progressIndicatorSize ?? this.progressIndicatorSize,
+    progressIndicatorStrokeWidth:
+        progressIndicatorStrokeWidth ?? this.progressIndicatorStrokeWidth,
+  );
+
+  /// Interpolates button tokens.
+  static NemoButtonTokens lerp(
+    NemoButtonTokens a,
+    NemoButtonTokens b,
+    double t,
+  ) => NemoButtonTokens(
+    resting: NemoButtonStateStyle.lerp(a.resting, b.resting, t),
+    hovered: NemoButtonStateStyle.lerp(a.hovered, b.hovered, t),
+    focused: NemoButtonStateStyle.lerp(a.focused, b.focused, t),
+    pressed: NemoButtonStateStyle.lerp(a.pressed, b.pressed, t),
+    disabled: NemoButtonStateStyle.lerp(a.disabled, b.disabled, t),
+    loading: NemoButtonStateStyle.lerp(a.loading, b.loading, t),
+    progressIndicatorSize: lerpDouble(
+      a.progressIndicatorSize,
+      b.progressIndicatorSize,
+      t,
+    )!,
+    progressIndicatorStrokeWidth: lerpDouble(
+      a.progressIndicatorStrokeWidth,
+      b.progressIndicatorStrokeWidth,
+      t,
+    )!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoButtonTokens &&
+      resting == other.resting &&
+      hovered == other.hovered &&
+      focused == other.focused &&
+      pressed == other.pressed &&
+      disabled == other.disabled &&
+      loading == other.loading &&
+      progressIndicatorSize == other.progressIndicatorSize &&
+      progressIndicatorStrokeWidth == other.progressIndicatorStrokeWidth;
+
+  @override
+  int get hashCode => Object.hash(
+    resting,
+    hovered,
+    focused,
+    pressed,
+    disabled,
+    loading,
+    progressIndicatorSize,
+    progressIndicatorStrokeWidth,
+  );
+}
+
+/// The finite interaction states rendered by [NemoButton].
+enum NemoButtonState {
+  /// The enabled default state.
+  resting,
+
+  /// The enabled state while a mouse pointer hovers the button.
+  hovered,
+
+  /// The enabled state while the button has keyboard focus.
+  focused,
+
+  /// The enabled state during a pointer or keyboard press.
+  pressed,
+
+  /// The unavailable state when [NemoButton.onPressed] is null.
+  disabled,
+
+  /// The system-owned state while [NemoButton.isLoading] is true.
+  loading,
+}
+
+/// Paint-only treatment for one Nemo button state.
+@immutable
+final class NemoButtonStateStyle {
+  /// Creates a button state treatment.
+  const NemoButtonStateStyle({
+    required this.foregroundBlend,
+    required this.shadowOffsetMultiplier,
+    required this.shadowBlurMultiplier,
+    required this.shadowOpacity,
+    required this.outlineOpacity,
+  });
+
+  /// Blend from semantic primary toward semantic foreground.
+  final double foregroundBlend;
+
+  /// Multiplier for the foundation shadow offset.
+  final double shadowOffsetMultiplier;
+
+  /// Multiplier for the foundation shadow blur.
+  final double shadowBlurMultiplier;
+
+  /// Opacity applied to semantic tactile shadows.
+  final double shadowOpacity;
+
+  /// Opacity applied to the semantic outline.
+  final double outlineOpacity;
+
+  /// Creates a copy with selectively replaced values.
+  NemoButtonStateStyle copyWith({
+    double? foregroundBlend,
+    double? shadowOffsetMultiplier,
+    double? shadowBlurMultiplier,
+    double? shadowOpacity,
+    double? outlineOpacity,
+  }) => NemoButtonStateStyle(
+    foregroundBlend: foregroundBlend ?? this.foregroundBlend,
+    shadowOffsetMultiplier:
+        shadowOffsetMultiplier ?? this.shadowOffsetMultiplier,
+    shadowBlurMultiplier: shadowBlurMultiplier ?? this.shadowBlurMultiplier,
+    shadowOpacity: shadowOpacity ?? this.shadowOpacity,
+    outlineOpacity: outlineOpacity ?? this.outlineOpacity,
+  );
+
+  /// Interpolates two state treatments.
+  static NemoButtonStateStyle lerp(
+    NemoButtonStateStyle a,
+    NemoButtonStateStyle b,
+    double t,
+  ) => NemoButtonStateStyle(
+    foregroundBlend: lerpDouble(a.foregroundBlend, b.foregroundBlend, t)!,
+    shadowOffsetMultiplier: lerpDouble(
+      a.shadowOffsetMultiplier,
+      b.shadowOffsetMultiplier,
+      t,
+    )!,
+    shadowBlurMultiplier: lerpDouble(
+      a.shadowBlurMultiplier,
+      b.shadowBlurMultiplier,
+      t,
+    )!,
+    shadowOpacity: lerpDouble(a.shadowOpacity, b.shadowOpacity, t)!,
+    outlineOpacity: lerpDouble(a.outlineOpacity, b.outlineOpacity, t)!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoButtonStateStyle &&
+      foregroundBlend == other.foregroundBlend &&
+      shadowOffsetMultiplier == other.shadowOffsetMultiplier &&
+      shadowBlurMultiplier == other.shadowBlurMultiplier &&
+      shadowOpacity == other.shadowOpacity &&
+      outlineOpacity == other.outlineOpacity;
+
+  @override
+  int get hashCode => Object.hash(
+    foregroundBlend,
+    shadowOffsetMultiplier,
+    shadowBlurMultiplier,
+    shadowOpacity,
+    outlineOpacity,
+  );
 }
 
 /// The component-level visual values for a Nemo surface.

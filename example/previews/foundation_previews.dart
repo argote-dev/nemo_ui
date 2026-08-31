@@ -62,3 +62,18 @@ Widget surfacePreview() {
     ),
   );
 }
+
+/// Native Flutter Widget Previewer definitions for NemoButton states.
+@Preview(name: 'Button states', group: 'Components')
+Widget buttonPreview() => _FoundationPreview(
+  theme: NemoThemeData.light(),
+  child: Wrap(
+    spacing: 16,
+    runSpacing: 16,
+    children: <Widget>[
+      NemoButton(onPressed: () {}, child: const Text('Continue')),
+      const NemoButton(onPressed: null, child: Text('Unavailable')),
+      const NemoButton(isLoading: true, child: Text('Submit')),
+    ],
+  ),
+);
