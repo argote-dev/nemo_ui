@@ -3,6 +3,7 @@ library;
 
 export 'src/components/nemo_button.dart';
 export 'src/components/nemo_surface.dart';
+export 'src/components/nemo_switch.dart';
 export 'src/foundation/nemo_asset_resolver.dart';
 export 'src/foundation/nemo_localizations.dart';
 export 'src/foundation/nemo_motion.dart';

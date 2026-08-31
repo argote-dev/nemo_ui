@@ -72,6 +72,17 @@ void main() {
       },
     );
 
+    test('switch tokens support copy, equality, and interpolation', () {
+      final NemoSwitchTokens base = NemoSwitchTokens.standard;
+      final NemoSwitchTokens changed = base.copyWith(trackWidth: 56);
+
+      expect(base.copyWith(), base);
+      expect(changed, isNot(base));
+      expect(NemoSwitchTokens.lerp(base, changed, 1), changed);
+      expect(NemoSwitchTokens.highContrast.trackOutlineOpacity, 1);
+      expect(NemoComponentTokens.standard.switchControl, base);
+    });
+
     test('lerp interpolates token values', () {
       final NemoThemeData light = NemoThemeData.light();
       final NemoThemeData dark = NemoThemeData.dark();

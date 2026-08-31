@@ -77,3 +77,22 @@ Widget buttonPreview() => _FoundationPreview(
     ],
   ),
 );
+
+/// Native Flutter Widget Previewer definitions for NemoSwitch states.
+@Preview(name: 'Switch states', group: 'Components')
+Widget switchPreview() => _FoundationPreview(
+  theme: NemoThemeData.light(),
+  child: Wrap(
+    spacing: 16,
+    runSpacing: 16,
+    children: <Widget>[
+      NemoSwitch(value: true, onChanged: (_) {}, child: const Text('Enabled')),
+      NemoSwitch(
+        value: false,
+        onChanged: (_) {},
+        child: const Text('Disabled'),
+      ),
+      const NemoSwitch(value: false, child: Text('Unavailable')),
+    ],
+  ),
+);

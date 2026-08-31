@@ -6,8 +6,8 @@ semantics, and reduced-motion behavior.
 
 The current `0.0.1` release is the foundation bootstrap. It provides design
 tokens, dynamic themes, scoped asset resolution, localization, semantic motion,
-native previews, and an example catalog. `NemoSurface` and `NemoButton` are
-available; `NemoSwitch` remains planned.
+native previews, and an example catalog. `NemoSurface`, `NemoButton`, and
+`NemoSwitch` are available.
 
 ## Requirements
 
@@ -106,6 +106,22 @@ NemoButton(
 See the [NemoButton playbook](doc/components/nemo-button.md) for its public
 API and accessibility contract.
 
+## Switch
+
+`NemoSwitch` is a controlled binary selection with localized on/off semantics,
+keyboard activation, and a 48px touch target:
+
+```dart
+NemoSwitch(
+  value: notificationsEnabled,
+  onChanged: (value) => setState(() => notificationsEnabled = value),
+  child: const Text('Notifications'),
+)
+```
+
+See the [NemoSwitch playbook](doc/components/nemo-switch.md) for its API,
+accessibility contract, and token customization.
+
 ## Provide dynamic assets
 
 Nemo UI uses semantic asset slots instead of component-owned paths. Inject a
@@ -155,6 +171,7 @@ can use the committed
 - [Quality gates](doc/quality-gates.md)
 - [NemoSurface playbook](doc/components/nemo-surface.md)
 - [NemoButton playbook](doc/components/nemo-button.md)
+- [NemoSwitch playbook](doc/components/nemo-switch.md)
 - [Component playbook template](doc/components/_template.md)
 - [Foundation research](doc/research/flutter-design-system-foundation.md)
 - [Contributing](CONTRIBUTING.md)

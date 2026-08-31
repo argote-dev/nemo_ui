@@ -406,6 +406,7 @@ final class NemoComponentTokens {
     required this.outlineWidth,
     required this.surface,
     required this.button,
+    required this.switchControl,
   });
 
   /// The minimum interactive control height.
@@ -426,6 +427,9 @@ final class NemoComponentTokens {
   /// Visual contract for [NemoButton].
   final NemoButtonTokens button;
 
+  /// Visual contract for [NemoSwitch].
+  final NemoSwitchTokens switchControl;
+
   /// The standard component contract.
   static const NemoComponentTokens standard = NemoComponentTokens(
     controlMinHeight: 48,
@@ -434,6 +438,7 @@ final class NemoComponentTokens {
     outlineWidth: 1,
     surface: NemoSurfaceTokens.standard,
     button: NemoButtonTokens.standard,
+    switchControl: NemoSwitchTokens.standard,
   );
 
   /// The high-contrast component contract.
@@ -444,6 +449,7 @@ final class NemoComponentTokens {
     outlineWidth: 2,
     surface: NemoSurfaceTokens.highContrast,
     button: NemoButtonTokens.highContrast,
+    switchControl: NemoSwitchTokens.highContrast,
   );
 
   /// Creates a copy with selectively replaced component values.
@@ -454,6 +460,7 @@ final class NemoComponentTokens {
     double? outlineWidth,
     NemoSurfaceTokens? surface,
     NemoButtonTokens? button,
+    NemoSwitchTokens? switchControl,
   }) {
     return NemoComponentTokens(
       controlMinHeight: controlMinHeight ?? this.controlMinHeight,
@@ -463,6 +470,7 @@ final class NemoComponentTokens {
       outlineWidth: outlineWidth ?? this.outlineWidth,
       surface: surface ?? this.surface,
       button: button ?? this.button,
+      switchControl: switchControl ?? this.switchControl,
     );
   }
 
@@ -483,8 +491,105 @@ final class NemoComponentTokens {
       outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
       surface: NemoSurfaceTokens.lerp(a.surface, b.surface, t),
       button: NemoButtonTokens.lerp(a.button, b.button, t),
+      switchControl: NemoSwitchTokens.lerp(a.switchControl, b.switchControl, t),
     );
   }
+}
+
+/// Visual values for the controlled [NemoSwitch] component.
+@immutable
+final class NemoSwitchTokens {
+  /// Creates switch visual tokens.
+  const NemoSwitchTokens({
+    required this.trackWidth,
+    required this.trackHeight,
+    required this.thumbDiameter,
+    required this.trackOutlineOpacity,
+    required this.disabledOpacity,
+  });
+
+  /// The horizontal track extent.
+  final double trackWidth;
+
+  /// The vertical track extent.
+  final double trackHeight;
+
+  /// The thumb diameter.
+  final double thumbDiameter;
+
+  /// Opacity applied to the explicit track boundary.
+  final double trackOutlineOpacity;
+
+  /// Opacity applied while unavailable.
+  final double disabledOpacity;
+
+  /// Default soft-neumorphic switch values.
+  static const NemoSwitchTokens standard = NemoSwitchTokens(
+    trackWidth: 52,
+    trackHeight: 32,
+    thumbDiameter: 24,
+    trackOutlineOpacity: .72,
+    disabledOpacity: .5,
+  );
+
+  /// High-contrast switch values preserve the explicit boundary.
+  static const NemoSwitchTokens highContrast = NemoSwitchTokens(
+    trackWidth: 52,
+    trackHeight: 32,
+    thumbDiameter: 24,
+    trackOutlineOpacity: 1,
+    disabledOpacity: .62,
+  );
+
+  /// Creates a copy with selectively replaced values.
+  NemoSwitchTokens copyWith({
+    double? trackWidth,
+    double? trackHeight,
+    double? thumbDiameter,
+    double? trackOutlineOpacity,
+    double? disabledOpacity,
+  }) => NemoSwitchTokens(
+    trackWidth: trackWidth ?? this.trackWidth,
+    trackHeight: trackHeight ?? this.trackHeight,
+    thumbDiameter: thumbDiameter ?? this.thumbDiameter,
+    trackOutlineOpacity: trackOutlineOpacity ?? this.trackOutlineOpacity,
+    disabledOpacity: disabledOpacity ?? this.disabledOpacity,
+  );
+
+  /// Interpolates switch tokens.
+  static NemoSwitchTokens lerp(
+    NemoSwitchTokens a,
+    NemoSwitchTokens b,
+    double t,
+  ) => NemoSwitchTokens(
+    trackWidth: lerpDouble(a.trackWidth, b.trackWidth, t)!,
+    trackHeight: lerpDouble(a.trackHeight, b.trackHeight, t)!,
+    thumbDiameter: lerpDouble(a.thumbDiameter, b.thumbDiameter, t)!,
+    trackOutlineOpacity: lerpDouble(
+      a.trackOutlineOpacity,
+      b.trackOutlineOpacity,
+      t,
+    )!,
+    disabledOpacity: lerpDouble(a.disabledOpacity, b.disabledOpacity, t)!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoSwitchTokens &&
+      trackWidth == other.trackWidth &&
+      trackHeight == other.trackHeight &&
+      thumbDiameter == other.thumbDiameter &&
+      trackOutlineOpacity == other.trackOutlineOpacity &&
+      disabledOpacity == other.disabledOpacity;
+
+  @override
+  int get hashCode => Object.hash(
+    trackWidth,
+    trackHeight,
+    thumbDiameter,
+    trackOutlineOpacity,
+    disabledOpacity,
+  );
 }
 
 /// The component-level visual values for a Nemo primary button.
