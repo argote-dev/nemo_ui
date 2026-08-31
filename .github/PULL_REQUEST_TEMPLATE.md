@@ -14,7 +14,8 @@ changes.
 - [ ] The pull request has one focused scope and links an issue, unless it is an administrative exception.
 - [ ] The title follows Conventional Commits.
 - [ ] Public API changes include English Dart documentation.
-- [ ] Tests cover the changed behavior and interactive states.
+- [ ] Tests cover the changed behavior and interactive states, including targeted assertions for state, semantics, keyboard input, localization, text scaling, and reduced motion when applicable.
+- [ ] Package coverage does not regress, or this pull request documents the intentional exception (rationale, before/after covered lines, targeted assertion evidence, and the baseline update).
 - [ ] The native preview and example are updated when applicable.
 - [ ] Accessibility, keyboard navigation, semantics, contrast, and text scaling were considered.
 - [ ] Motion uses semantic tokens and includes reduced-motion behavior.

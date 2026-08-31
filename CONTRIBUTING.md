@@ -41,6 +41,7 @@ Run the same checks enforced by continuous integration:
 fvm dart format --output=none --set-exit-if-changed .
 fvm flutter analyze
 fvm flutter test --coverage
+fvm dart run tool/check_coverage.dart coverage/lcov.info tool/coverage_baseline.json
 fvm flutter pub publish --dry-run
 (cd example && fvm flutter test && fvm flutter build web)
 ```

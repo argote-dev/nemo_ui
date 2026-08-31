@@ -25,14 +25,30 @@ Dependabot pull requests.
 
 ## Coverage policy
 
-Coverage is reported but not percentage-gated during the foundation and first
-three component implementations. After `NemoSurface`, `NemoButton`, and
-`NemoSwitch` are complete, their result becomes the baseline. Subsequent pull
-requests may not lower that baseline without an explicit, documented exception.
+CI generates `coverage/lcov.info` and enforces the committed covered-line
+ratchet:
 
-Coverage percentage alone is not sufficient: state behavior, semantics,
-keyboard input, localization, text scaling, and reduced motion require targeted
-assertions.
+```sh
+fvm dart run tool/check_coverage.dart coverage/lcov.info tool/coverage_baseline.json
+```
+
+The checker sums every valid LCOV `LH` record and requires that total to be at
+least `coveredLines` in the baseline. The initial verified baseline is 709
+covered lines out of 797 found lines (88.958595%), produced at commit
+`e81719d` with Flutter 3.47.0. `foundLines` and `coveragePercent` are recorded
+as provenance; coverage percentage is not the gate.
+
+A pull request that intentionally needs to lower the ratchet must document an
+explicit exception before updating `tool/coverage_baseline.json`. Include:
+
+1. The rationale for the lower covered-line total.
+2. The before and after covered-line values.
+3. Targeted assertion evidence for the behavior affected by the change.
+4. The baseline update in the same pull request.
+
+The exception does not replace required targeted assertions. State behavior,
+semantics, keyboard input, localization, text scaling, and reduced-motion
+behavior remain mandatory whenever applicable.
 
 ## Golden policy
 
