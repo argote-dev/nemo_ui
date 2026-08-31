@@ -104,7 +104,10 @@ void main() {
             theme: theme,
           ),
         );
-        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey<String>('nemo-switch-indicator-on')),
+          findsOneWidget,
+        );
       }
     });
 

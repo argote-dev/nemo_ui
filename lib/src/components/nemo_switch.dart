@@ -194,13 +194,18 @@ class _NemoSwitchState extends State<NemoSwitch> {
                                   : theme.semantic.foreground,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              widget.value ? Icons.check : Icons.remove,
-                              size: 16,
-                              color: widget.value
-                                  ? theme.semantic.primary
-                                  : theme.semantic.surface,
-                              semanticLabel: null,
+                            child: CustomPaint(
+                              key: ValueKey<String>(
+                                widget.value
+                                    ? 'nemo-switch-indicator-on'
+                                    : 'nemo-switch-indicator-off',
+                              ),
+                              painter: _NemoSwitchIndicatorPainter(
+                                checked: widget.value,
+                                color: widget.value
+                                    ? theme.semantic.primary
+                                    : theme.semantic.surface,
+                              ),
                             ),
                           ),
                         ),
@@ -215,4 +220,38 @@ class _NemoSwitchState extends State<NemoSwitch> {
       ),
     );
   }
+}
+
+class _NemoSwitchIndicatorPainter extends CustomPainter {
+  const _NemoSwitchIndicatorPainter({
+    required this.checked,
+    required this.color,
+  });
+
+  final bool checked;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square
+      ..isAntiAlias = false;
+    final Offset center = size.center(Offset.zero);
+    if (!checked) {
+      canvas.drawLine(center.translate(-4, 0), center.translate(4, 0), paint);
+      return;
+    }
+    final Path check = Path()
+      ..moveTo(center.dx - 5, center.dy)
+      ..lineTo(center.dx - 1, center.dy + 4)
+      ..lineTo(center.dx + 5, center.dy - 4);
+    canvas.drawPath(check, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _NemoSwitchIndicatorPainter oldDelegate) =>
+      checked != oldDelegate.checked || color != oldDelegate.color;
 }
