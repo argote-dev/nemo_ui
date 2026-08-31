@@ -206,6 +206,14 @@ class _FoundationPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           const _ButtonCatalog(),
+          const SizedBox(height: 24),
+          Text(
+            'NemoSwitch',
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: theme.semantic.foreground),
+          ),
+          const SizedBox(height: 12),
+          const _SwitchCatalog(),
         ],
       ),
     );
@@ -322,4 +330,29 @@ class _CatalogAssetResolver implements NemoAssetResolver {
       NemoAsset.emptyStateIllustration => null,
     };
   }
+}
+
+class _SwitchCatalog extends StatefulWidget {
+  const _SwitchCatalog();
+
+  @override
+  State<_SwitchCatalog> createState() => _SwitchCatalogState();
+}
+
+class _SwitchCatalogState extends State<_SwitchCatalog> {
+  bool _notifications = true;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: 12,
+    runSpacing: 12,
+    children: <Widget>[
+      NemoSwitch(
+        value: _notifications,
+        onChanged: (value) => setState(() => _notifications = value),
+        child: const Text('Notifications'),
+      ),
+      const NemoSwitch(value: false, child: Text('Unavailable')),
+    ],
+  );
 }
