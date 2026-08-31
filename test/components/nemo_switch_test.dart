@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
+import '../support/golden_test_harness.dart';
+
 void main() {
   group('NemoSwitch', () {
     testWidgets(
@@ -235,17 +237,13 @@ void main() {
     });
 
     testWidgets('renders deterministic representative states', (tester) async {
-      tester.view.physicalSize = const Size(400, 256);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      configureGoldenTest(tester, physicalSize: const Size(400, 256));
       final focusNode = FocusNode();
       await tester.pumpWidget(
-        MaterialApp(
-          debugShowCheckedModeBanner: false,
-          supportedLocales: NemoLocalizations.supportedLocales,
-          localizationsDelegates: NemoLocalizations.localizationsDelegates,
-          home: ColoredBox(
+        goldenTestApp(
+          scaffold: false,
+          disableAnimations: false,
+          child: ColoredBox(
             color: Colors.white,
             child: Column(
               children: <Widget>[
@@ -297,10 +295,7 @@ Widget _goldenSwitch(
     components: theme.components.copyWith(switchControl: tokens.copyWith()),
   );
   return Theme(
-    data: ThemeData(
-      platform: TargetPlatform.android,
-      extensions: <ThemeExtension<dynamic>>[stableTheme],
-    ),
+    data: goldenThemeData(stableTheme),
     child: ColoredBox(
       color: stableTheme.semantic.surface,
       child: Padding(

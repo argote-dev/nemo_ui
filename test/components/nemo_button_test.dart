@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
+import '../support/golden_test_harness.dart';
+
 void main() {
   group('NemoButton', () {
     testWidgets('activates through touch, Enter, and Space', (
@@ -222,14 +224,12 @@ void main() {
     testWidgets('renders deterministically in light, dark, and high contrast', (
       WidgetTester tester,
     ) async {
-      tester.view.physicalSize = const Size(960, 640);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+      configureGoldenTest(tester, physicalSize: const Size(960, 640));
       final FocusNode focusNode = FocusNode();
       await tester.pumpWidget(
-        _host(
-          Column(
+        goldenTestApp(
+          disableAnimations: false,
+          child: Column(
             children: <Widget>[
               _themedButton(NemoThemeData.light()),
               _themedButton(NemoThemeData.dark(), focusNode: focusNode),
@@ -273,10 +273,7 @@ Widget _themedButton(
     child: const SizedBox(width: 160, height: 16),
   );
   return Theme(
-    data: ThemeData(
-      platform: TargetPlatform.android,
-      extensions: <ThemeExtension<dynamic>>[goldenTheme],
-    ),
+    data: goldenThemeData(goldenTheme),
     child: ColoredBox(
       color: goldenTheme.semantic.surface,
       child: Padding(padding: const EdgeInsets.all(8), child: button),

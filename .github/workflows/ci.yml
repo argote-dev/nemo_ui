@@ -46,6 +46,21 @@ jobs:
       - name: Analyze package
         run: flutter analyze
 
+      - name: Test deterministic golden baselines
+        run: >-
+          flutter test
+          test/components/nemo_button_test.dart
+          test/components/nemo_surface_golden_test.dart
+          test/components/nemo_switch_test.dart
+
+      - name: Upload golden failure evidence
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: golden-failures-flutter-${{ matrix.flutter-version }}
+          path: test/**/failures/**
+          if-no-files-found: warn
+
       - name: Test package with coverage
         run: flutter test --coverage
 

@@ -47,7 +47,12 @@ Link the native Flutter Widget Previewer scenarios and example-app route.
 ## Test matrix
 
 List unit, widget, semantics, interaction, localization, preview, and golden
-coverage.
+coverage. For visual components, name the deterministic golden scene, physical
+dimensions, foundation themes, and covered variants. Golden scenes pin Android,
+DPR `1`, English locale, no text scaling, a fixed animation preference, and the
+Ahem test font; keep their visual content glyph-free. Record that intentional
+baseline updates require tracked PNG review plus before-and-after pull-request
+evidence.
 
 ## Decisions and known constraints
 
