@@ -231,22 +231,9 @@ void main() {
         _host(
           Column(
             children: <Widget>[
-              _themedButton(NemoThemeData.light(), 'Resting'),
-              _themedButton(
-                NemoThemeData.dark(),
-                'Focused',
-                focusNode: focusNode,
-              ),
-              _themedButton(
-                NemoThemeData.highContrast(),
-                'Disabled',
-                enabled: false,
-              ),
-              _themedButton(
-                NemoThemeData.highContrast(),
-                'Loading',
-                loading: true,
-              ),
+              _themedButton(NemoThemeData.light()),
+              _themedButton(NemoThemeData.dark(), focusNode: focusNode),
+              _themedButton(NemoThemeData.highContrast(), enabled: false),
             ],
           ),
         ),
@@ -262,11 +249,9 @@ void main() {
 }
 
 Widget _themedButton(
-  NemoThemeData theme,
-  String label, {
+  NemoThemeData theme, {
   FocusNode? focusNode,
   bool enabled = true,
-  bool loading = false,
 }) {
   final NemoButtonTokens buttonTokens = theme.components.button;
   final NemoThemeData goldenTheme = theme.copyWith(
@@ -285,8 +270,7 @@ Widget _themedButton(
   final Widget button = NemoButton(
     focusNode: focusNode,
     onPressed: enabled ? () {} : null,
-    isLoading: loading,
-    child: Text(label),
+    child: const SizedBox(width: 160, height: 16),
   );
   return Theme(
     data: ThemeData(
@@ -295,25 +279,9 @@ Widget _themedButton(
     ),
     child: ColoredBox(
       color: goldenTheme.semantic.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: loading
-            ? const MediaQuery(
-                data: MediaQueryData(disableAnimations: true),
-                child: _GoldenLoadingButton(),
-              )
-            : button,
-      ),
+      child: Padding(padding: const EdgeInsets.all(8), child: button),
     ),
   );
-}
-
-class _GoldenLoadingButton extends StatelessWidget {
-  const _GoldenLoadingButton();
-
-  @override
-  Widget build(BuildContext context) =>
-      NemoButton(isLoading: true, child: const Text('Loading'));
 }
 
 Widget _host(
@@ -324,6 +292,7 @@ Widget _host(
 }) {
   final NemoThemeData theme = NemoThemeData.light();
   return MaterialApp(
+    debugShowCheckedModeBanner: false,
     locale: locale,
     supportedLocales: NemoLocalizations.supportedLocales,
     localizationsDelegates: NemoLocalizations.localizationsDelegates,
