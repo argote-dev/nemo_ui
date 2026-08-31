@@ -268,6 +268,20 @@ Widget _themedButton(
   bool enabled = true,
   bool loading = false,
 }) {
+  final NemoButtonTokens buttonTokens = theme.components.button;
+  final NemoThemeData goldenTheme = theme.copyWith(
+    components: theme.components.copyWith(
+      // Blurred mask filters are rasterized differently across Skia hosts.
+      // The golden keeps the real theme colors, state tones, outlines, and
+      // focus ring while functional tests cover the tokenized shadow states.
+      button: buttonTokens.copyWith(
+        resting: buttonTokens.resting.copyWith(shadowOpacity: 0),
+        hovered: buttonTokens.hovered.copyWith(shadowOpacity: 0),
+        focused: buttonTokens.focused.copyWith(shadowOpacity: 0),
+        pressed: buttonTokens.pressed.copyWith(shadowOpacity: 0),
+      ),
+    ),
+  );
   final Widget button = NemoButton(
     focusNode: focusNode,
     onPressed: enabled ? () {} : null,
@@ -277,10 +291,10 @@ Widget _themedButton(
   return Theme(
     data: ThemeData(
       platform: TargetPlatform.android,
-      extensions: <ThemeExtension<dynamic>>[theme],
+      extensions: <ThemeExtension<dynamic>>[goldenTheme],
     ),
     child: ColoredBox(
-      color: theme.semantic.surface,
+      color: goldenTheme.semantic.surface,
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: loading
