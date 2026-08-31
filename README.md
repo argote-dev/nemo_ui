@@ -6,8 +6,8 @@ semantics, and reduced-motion behavior.
 
 The current `0.0.1` release is the foundation bootstrap. It provides design
 tokens, dynamic themes, scoped asset resolution, localization, semantic motion,
-native previews, and an example catalog. The first components will be
-`NemoSurface`, `NemoButton`, and `NemoSwitch`.
+native previews, and an example catalog. `NemoSurface` is now available as
+the first component; `NemoButton` and `NemoSwitch` remain planned.
 
 ## Requirements
 
@@ -72,6 +72,23 @@ Read tokens within a widget with `NemoTheme.of(context)`. Theme factories accept
 group-level overrides, and every token group supports immutable `copyWith`
 customization.
 
+## Surface
+
+`NemoSurface` is a non-interactive, token-driven primitive for visual grouping.
+It provides five local relief levels, semantic tones, tokenized shapes, and
+reduced-motion-aware transitions while leaving layout, semantics, focus, and
+gestures to composition:
+
+```dart
+NemoSurface(
+  depth: NemoSurfaceDepth.raised,
+  child: const Text('Surface content'),
+)
+```
+
+See the [NemoSurface playbook](doc/components/nemo-surface.md) for its full
+API, accessibility contract, visual constraints, and test matrix.
+
 ## Provide dynamic assets
 
 Nemo UI uses semantic asset slots instead of component-owned paths. Inject a
@@ -119,6 +136,7 @@ can use the committed
 - [Foundation architecture](doc/architecture/foundation.md)
 - [Motion and micro-interaction policy](doc/motion.md)
 - [Quality gates](doc/quality-gates.md)
+- [NemoSurface playbook](doc/components/nemo-surface.md)
 - [Component playbook template](doc/components/_template.md)
 - [Foundation research](doc/research/flutter-design-system-foundation.md)
 - [Contributing](CONTRIBUTING.md)

@@ -123,7 +123,6 @@ class _FoundationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
     final NemoLocalizations strings = NemoLocalizations.of(context);
-    final NemoMotionTokens motion = theme.motion.resolveFor(context);
     final Widget? asset = NemoAssetScope.of(context)
         .widgetFor(NemoAsset.brandMark, context);
 
@@ -137,40 +136,13 @@ class _FoundationPage extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.all(theme.foundation.space16),
         children: <Widget>[
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.semantic.surfaceVariant,
-              border: Border.all(
-                color: theme.semantic.outline,
-                width: theme.components.outlineWidth,
-              ),
-              borderRadius: BorderRadius.circular(theme.foundation.radiusLarge),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(theme.foundation.space16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  if (asset case final Widget resolvedAsset) resolvedAsset,
-                  Text(
-                    'No pilot component is installed yet.',
-                    style: Theme.of(context).textTheme.titleLarge
-                        ?.copyWith(color: theme.semantic.foreground),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${strings.loading} · ${strings.retry} · ${strings.error}',
-                    style: TextStyle(color: theme.semantic.mutedForeground),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Motion: ${motion.standard.inMilliseconds} ms',
-                    style: TextStyle(color: theme.semantic.mutedForeground),
-                  ),
-                ],
-              ),
-            ),
+          Text(
+            'NemoSurface',
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: theme.semantic.foreground),
           ),
+          const SizedBox(height: 12),
+          _SurfaceCatalog(theme: theme, asset: asset, strings: strings),
           const SizedBox(height: 24),
           SegmentedButton<Brightness>(
             segments: const <ButtonSegment<Brightness>>[
@@ -228,6 +200,66 @@ class _FoundationPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SurfaceCatalog extends StatelessWidget {
+  const _SurfaceCatalog({
+    required this.theme,
+    required this.asset,
+    required this.strings,
+  });
+
+  final NemoThemeData theme;
+  final Widget? asset;
+  final NemoLocalizations strings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        NemoSurface(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              if (asset case final Widget resolvedAsset) resolvedAsset,
+              Text(
+                'Raised by default',
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(color: theme.semantic.foreground),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${strings.loading} · ${strings.retry} · ${strings.error}',
+                style: TextStyle(color: theme.semantic.mutedForeground),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: <Widget>[
+            for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values)
+              SizedBox(
+                width: 132,
+                child: NemoSurface(
+                  depth: depth,
+                  tone: NemoSurfaceTone.surfaceVariant,
+                  shape: NemoSurfaceShape.roundedSmall,
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    depth.name,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: theme.semantic.foreground),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 import 'nemo_motion.dart';
+import 'nemo_surface_contract.dart';
 
 /// Foundational, semantic, and component-ready design tokens for Nemo.
 @immutable
@@ -403,6 +404,7 @@ final class NemoComponentTokens {
     required this.controlHorizontalPadding,
     required this.focusRingWidth,
     required this.outlineWidth,
+    required this.surface,
   });
 
   /// The minimum interactive control height.
@@ -417,12 +419,16 @@ final class NemoComponentTokens {
   /// The default tonal outline width.
   final double outlineWidth;
 
+  /// Visual contract for [NemoSurface].
+  final NemoSurfaceTokens surface;
+
   /// The standard component contract.
   static const NemoComponentTokens standard = NemoComponentTokens(
     controlMinHeight: 48,
     controlHorizontalPadding: 16,
     focusRingWidth: 3,
     outlineWidth: 1,
+    surface: NemoSurfaceTokens.standard,
   );
 
   /// The high-contrast component contract.
@@ -431,6 +437,7 @@ final class NemoComponentTokens {
     controlHorizontalPadding: 16,
     focusRingWidth: 3,
     outlineWidth: 2,
+    surface: NemoSurfaceTokens.highContrast,
   );
 
   /// Creates a copy with selectively replaced component values.
@@ -439,6 +446,7 @@ final class NemoComponentTokens {
     double? controlHorizontalPadding,
     double? focusRingWidth,
     double? outlineWidth,
+    NemoSurfaceTokens? surface,
   }) {
     return NemoComponentTokens(
       controlMinHeight: controlMinHeight ?? this.controlMinHeight,
@@ -446,6 +454,7 @@ final class NemoComponentTokens {
           controlHorizontalPadding ?? this.controlHorizontalPadding,
       focusRingWidth: focusRingWidth ?? this.focusRingWidth,
       outlineWidth: outlineWidth ?? this.outlineWidth,
+      surface: surface ?? this.surface,
     );
   }
 
@@ -464,8 +473,298 @@ final class NemoComponentTokens {
       )!,
       focusRingWidth: lerpDouble(a.focusRingWidth, b.focusRingWidth, t)!,
       outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
+      surface: NemoSurfaceTokens.lerp(a.surface, b.surface, t),
     );
   }
+}
+
+/// The component-level visual values for a Nemo surface.
+@immutable
+final class NemoSurfaceTokens {
+  /// Creates visual values for every supported depth.
+  const NemoSurfaceTokens({
+    required this.deeplySunken,
+    required this.sunken,
+    required this.flat,
+    required this.raised,
+    required this.elevated,
+  });
+
+  /// The deepest inset treatment.
+  final NemoSurfaceDepthStyle deeplySunken;
+
+  /// The standard inset treatment.
+  final NemoSurfaceDepthStyle sunken;
+
+  /// The neutral treatment.
+  final NemoSurfaceDepthStyle flat;
+
+  /// The standard raised treatment.
+  final NemoSurfaceDepthStyle raised;
+
+  /// The strongest raised treatment.
+  final NemoSurfaceDepthStyle elevated;
+
+  /// The default soft-neumorphic surface treatments.
+  static const NemoSurfaceTokens standard = NemoSurfaceTokens(
+    deeplySunken: NemoSurfaceDepthStyle(
+      intensity: -2,
+      tonalOverlayOpacity: 0.10,
+      outlineOpacity: 0.32,
+      shadowOpacity: 0.58,
+      blurMultiplier: 1,
+      offsetMultiplier: 1,
+      tonalColor: NemoSurfaceTonalColor.lowlightShadow,
+    ),
+    sunken: NemoSurfaceDepthStyle(
+      intensity: -1,
+      tonalOverlayOpacity: 0.06,
+      outlineOpacity: 0.24,
+      shadowOpacity: 0.42,
+      blurMultiplier: 0.7,
+      offsetMultiplier: 0.7,
+      tonalColor: NemoSurfaceTonalColor.lowlightShadow,
+    ),
+    flat: NemoSurfaceDepthStyle(
+      intensity: 0,
+      tonalOverlayOpacity: 0,
+      outlineOpacity: 0.18,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.outline,
+    ),
+    raised: NemoSurfaceDepthStyle(
+      intensity: 1,
+      tonalOverlayOpacity: 0.025,
+      outlineOpacity: 0.22,
+      shadowOpacity: 0.42,
+      blurMultiplier: 0.7,
+      offsetMultiplier: 0.7,
+      tonalColor: NemoSurfaceTonalColor.highlightShadow,
+    ),
+    elevated: NemoSurfaceDepthStyle(
+      intensity: 2,
+      tonalOverlayOpacity: 0.05,
+      outlineOpacity: 0.30,
+      shadowOpacity: 0.58,
+      blurMultiplier: 1,
+      offsetMultiplier: 1,
+      tonalColor: NemoSurfaceTonalColor.highlightShadow,
+    ),
+  );
+
+  /// High contrast keeps direction but intentionally collapses magnitude.
+  static const NemoSurfaceTokens highContrast = NemoSurfaceTokens(
+    deeplySunken: NemoSurfaceDepthStyle(
+      intensity: -1,
+      tonalOverlayOpacity: 0.14,
+      outlineOpacity: 0.85,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.foreground,
+    ),
+    sunken: NemoSurfaceDepthStyle(
+      intensity: -1,
+      tonalOverlayOpacity: 0.14,
+      outlineOpacity: 0.85,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.foreground,
+    ),
+    flat: NemoSurfaceDepthStyle(
+      intensity: 0,
+      tonalOverlayOpacity: 0.05,
+      outlineOpacity: 0.45,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
+    ),
+    raised: NemoSurfaceDepthStyle(
+      intensity: 1,
+      tonalOverlayOpacity: 0.8,
+      outlineOpacity: 1,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
+    ),
+    elevated: NemoSurfaceDepthStyle(
+      intensity: 1,
+      tonalOverlayOpacity: 0.8,
+      outlineOpacity: 1,
+      shadowOpacity: 0,
+      blurMultiplier: 0,
+      offsetMultiplier: 0,
+      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
+    ),
+  );
+
+  /// Returns the style associated with [depth].
+  NemoSurfaceDepthStyle styleFor(NemoSurfaceDepth depth) => switch (depth) {
+    NemoSurfaceDepth.deeplySunken => deeplySunken,
+    NemoSurfaceDepth.sunken => sunken,
+    NemoSurfaceDepth.flat => flat,
+    NemoSurfaceDepth.raised => raised,
+    NemoSurfaceDepth.elevated => elevated,
+  };
+
+  /// Creates a copy with selectively replaced depth styles.
+  NemoSurfaceTokens copyWith({
+    NemoSurfaceDepthStyle? deeplySunken,
+    NemoSurfaceDepthStyle? sunken,
+    NemoSurfaceDepthStyle? flat,
+    NemoSurfaceDepthStyle? raised,
+    NemoSurfaceDepthStyle? elevated,
+  }) => NemoSurfaceTokens(
+    deeplySunken: deeplySunken ?? this.deeplySunken,
+    sunken: sunken ?? this.sunken,
+    flat: flat ?? this.flat,
+    raised: raised ?? this.raised,
+    elevated: elevated ?? this.elevated,
+  );
+
+  /// Interpolates component surface tokens.
+  static NemoSurfaceTokens lerp(
+    NemoSurfaceTokens a,
+    NemoSurfaceTokens b,
+    double t,
+  ) => NemoSurfaceTokens(
+    deeplySunken: NemoSurfaceDepthStyle.lerp(a.deeplySunken, b.deeplySunken, t),
+    sunken: NemoSurfaceDepthStyle.lerp(a.sunken, b.sunken, t),
+    flat: NemoSurfaceDepthStyle.lerp(a.flat, b.flat, t),
+    raised: NemoSurfaceDepthStyle.lerp(a.raised, b.raised, t),
+    elevated: NemoSurfaceDepthStyle.lerp(a.elevated, b.elevated, t),
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoSurfaceTokens &&
+      deeplySunken == other.deeplySunken &&
+      sunken == other.sunken &&
+      flat == other.flat &&
+      raised == other.raised &&
+      elevated == other.elevated;
+
+  @override
+  int get hashCode => Object.hash(deeplySunken, sunken, flat, raised, elevated);
+}
+
+/// Explicit visual values for one surface depth.
+@immutable
+final class NemoSurfaceDepthStyle {
+  /// Creates one depth's visual values.
+  const NemoSurfaceDepthStyle({
+    required this.intensity,
+    required this.tonalOverlayOpacity,
+    required this.outlineOpacity,
+    required this.shadowOpacity,
+    required this.blurMultiplier,
+    required this.offsetMultiplier,
+    required this.tonalColor,
+  });
+
+  /// Signed relief used to route outer versus inset shadows.
+  final double intensity;
+
+  /// Opacity applied to the semantic base tone.
+  final double tonalOverlayOpacity;
+
+  /// Opacity of the semantic outline.
+  final double outlineOpacity;
+
+  /// Opacity multiplier for tactile shadows.
+  final double shadowOpacity;
+
+  /// Explicit multiplier for the foundation shadow blur.
+  final double blurMultiplier;
+
+  /// Explicit multiplier for the foundation shadow offset.
+  final double offsetMultiplier;
+
+  /// The semantic color used for the tonal contrast adjustment.
+  final NemoSurfaceTonalColor tonalColor;
+
+  /// Creates a copy with selectively replaced values.
+  NemoSurfaceDepthStyle copyWith({
+    double? intensity,
+    double? tonalOverlayOpacity,
+    double? outlineOpacity,
+    double? shadowOpacity,
+    double? blurMultiplier,
+    double? offsetMultiplier,
+    NemoSurfaceTonalColor? tonalColor,
+  }) => NemoSurfaceDepthStyle(
+    intensity: intensity ?? this.intensity,
+    tonalOverlayOpacity: tonalOverlayOpacity ?? this.tonalOverlayOpacity,
+    outlineOpacity: outlineOpacity ?? this.outlineOpacity,
+    shadowOpacity: shadowOpacity ?? this.shadowOpacity,
+    blurMultiplier: blurMultiplier ?? this.blurMultiplier,
+    offsetMultiplier: offsetMultiplier ?? this.offsetMultiplier,
+    tonalColor: tonalColor ?? this.tonalColor,
+  );
+
+  /// Interpolates two depth styles.
+  static NemoSurfaceDepthStyle lerp(
+    NemoSurfaceDepthStyle a,
+    NemoSurfaceDepthStyle b,
+    double t,
+  ) => NemoSurfaceDepthStyle(
+    intensity: lerpDouble(a.intensity, b.intensity, t)!,
+    tonalOverlayOpacity: lerpDouble(
+      a.tonalOverlayOpacity,
+      b.tonalOverlayOpacity,
+      t,
+    )!,
+    outlineOpacity: lerpDouble(a.outlineOpacity, b.outlineOpacity, t)!,
+    shadowOpacity: lerpDouble(a.shadowOpacity, b.shadowOpacity, t)!,
+    blurMultiplier: lerpDouble(a.blurMultiplier, b.blurMultiplier, t)!,
+    offsetMultiplier: lerpDouble(a.offsetMultiplier, b.offsetMultiplier, t)!,
+    tonalColor: t < 0.5 ? a.tonalColor : b.tonalColor,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoSurfaceDepthStyle &&
+      intensity == other.intensity &&
+      tonalOverlayOpacity == other.tonalOverlayOpacity &&
+      outlineOpacity == other.outlineOpacity &&
+      shadowOpacity == other.shadowOpacity &&
+      blurMultiplier == other.blurMultiplier &&
+      offsetMultiplier == other.offsetMultiplier &&
+      tonalColor == other.tonalColor;
+
+  @override
+  int get hashCode => Object.hash(
+    intensity,
+    tonalOverlayOpacity,
+    outlineOpacity,
+    shadowOpacity,
+    blurMultiplier,
+    offsetMultiplier,
+    tonalColor,
+  );
+}
+
+/// Semantic color source for a Surface depth's tonal adjustment.
+enum NemoSurfaceTonalColor {
+  /// Uses the theme highlight shadow color.
+  highlightShadow,
+
+  /// Uses the theme lowlight shadow color.
+  lowlightShadow,
+
+  /// Uses the theme foreground color.
+  foreground,
+
+  /// Uses the semantic outline color.
+  outline,
+
+  /// Uses the alternate semantic surface color.
+  surfaceVariant,
 }
 
 /// Optional group-level overrides applied by theme factories.

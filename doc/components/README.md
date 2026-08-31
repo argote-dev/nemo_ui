@@ -9,3 +9,8 @@ with a short reason rather than deleting a section.
 
 Playbooks and the public Dart API are written in English. They must be updated
 in the same pull request as any intentional behavioral or visual change.
+
+## Available playbooks
+
+- [NemoSurface](nemo-surface.md) — non-interactive, token-driven visual
+  grouping primitive.

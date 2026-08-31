@@ -11,7 +11,8 @@ void main() {
     expect(find.text('Nemo foundation catalog'), findsWidgets);
     expect(find.text('High contrast'), findsOneWidget);
     expect(find.text('Reduced motion'), findsOneWidget);
-    expect(find.text('Motion: 220 ms'), findsOneWidget);
+    expect(find.text('Raised by default'), findsOneWidget);
+    expect(find.text('elevated'), findsOneWidget);
 
     await tester.tap(find.text('Español'));
     await tester.pumpAndSettle();
