@@ -21,6 +21,6 @@ changes.
 - [ ] Motion uses semantic tokens and includes reduced-motion behavior.
 - [ ] System-owned copy is localized; caller-owned copy remains configurable.
 - [ ] The component playbook is added or updated when applicable.
-- [ ] Intentional visual changes include reviewable evidence and updated goldens when the gate is active.
+- [ ] Intentional visual changes include reviewed tracked golden updates and before/after evidence; unexplained golden diffs are not accepted.
 - [ ] Breaking changes are identified and documented in `CHANGELOG.md`.
 - [ ] All conversations are resolved and required checks pass.

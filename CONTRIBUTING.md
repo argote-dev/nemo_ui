@@ -51,6 +51,34 @@ native previews from the repository root with `fvm flutter widget-preview start`
 
 The minimum supported Flutter version is 3.47.0.
 
+## Golden tests
+
+Deterministic component goldens are blocking checks. Verify them locally with:
+
+```sh
+fvm flutter test \
+  test/components/nemo_button_test.dart \
+  test/components/nemo_surface_golden_test.dart \
+  test/components/nemo_switch_test.dart
+```
+
+Only update a baseline when the visual contract intentionally changes:
+
+```sh
+fvm flutter test --update-goldens test/components/nemo_surface_golden_test.dart
+```
+
+Review the resulting tracked PNG diff and include before-and-after evidence in
+the pull request. A failing comparison writes visual diagnostics below the
+test's `failures/` directory; CI uploads those diagnostics for failed golden
+steps. Do not use `--update-goldens` to accept an unexplained regression.
+
+Golden scenes pin their physical dimensions, device-pixel ratio, Android
+platform, English locale, no text scaling, a fixed animation preference, and
+the Ahem test font. Keep scene content glyph-free so font rasterization cannot
+conceal a visual regression. Blurred shadows are excluded only where Skia host
+rendering is non-deterministic; token and behavior tests still cover them.
+
 ## Public API
 
 Only declarations exported by `lib/nemo_ui.dart` are public API. A public
@@ -67,7 +95,8 @@ Every component must include:
 - an example-app scenario;
 - a playbook at `doc/components/<component>.md` based on the component
   playbook template;
-- golden coverage once the golden-test gate is active.
+- golden coverage with an intentional-update evidence review when the component
+  changes visual output.
 
 See [the contribution playbook](doc/components/README.md) for the required
 component documentation sections.

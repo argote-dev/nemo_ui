@@ -15,7 +15,8 @@ Every pull request must pass:
 6. Example application tests and a web build.
 7. `flutter pub publish --dry-run`.
 8. English Dart documentation for exported APIs.
-9. The component playbook, preview, and example checks when applicable.
+9. Deterministic component golden baselines.
+10. The component playbook, preview, and example checks when applicable.
 
 CI runs on current Flutter stable and the minimum supported Flutter 3.47.0.
 They are the same version at bootstrap, so CI uses one job; the matrix gains a
@@ -52,10 +53,31 @@ behavior remain mandatory whenever applicable.
 
 ## Golden policy
 
-Golden tests become blocking after `NemoSurface` and the visual token model are
-stable. Goldens use deterministic fonts, platform, dimensions, device pixel
-ratio, and theme configuration. Intentional updates require before-and-after
-evidence in the pull request.
+Golden tests are blocking. The CI **Test deterministic golden baselines** step
+executes the component baselines before the complete coverage suite. On a
+comparison failure, CI uploads the generated failure images as an artifact.
+
+Every golden scene fixes its physical dimensions, device pixel ratio (`1`),
+Android platform, English locale, text scaling, a fixed animation preference,
+test font (`Ahem`), and theme configuration. Golden scenes remain glyph-free, so visual
+coverage does not depend on host text rasterization. Light, dark, and
+high-contrast foundation states must be represented when a component consumes
+foundation visual tokens.
+
+Run the focused checks locally before opening a pull request:
+
+```sh
+fvm flutter test \
+  test/components/nemo_button_test.dart \
+  test/components/nemo_surface_golden_test.dart \
+  test/components/nemo_switch_test.dart
+```
+
+An intentional change uses `fvm flutter test --update-goldens <test-file>`.
+It must include the tracked PNG change plus reviewable before-and-after visual
+evidence in the pull request. Never update a golden to accept an unexplained
+diff. Blurred shadows may be neutralized only when host Skia rendering is
+non-deterministic, with token and behavior coverage retained separately.
 
 ## Branch policy
 

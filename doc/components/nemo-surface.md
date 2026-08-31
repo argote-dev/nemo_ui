@@ -89,9 +89,11 @@ Widget Previewer scenario **Components / Surface depths** in
 ## Test matrix
 
 Widget tests cover defaults, clipping, theme absence, semantics/hit-test
-transparency, reduced motion, and high-contrast depth collapse. Visual golden
-baselines, font pinning, DPR policy, and image gates are intentionally deferred
-to issue #7.
+transparency, reduced motion, and high-contrast depth collapse. The
+deterministic Surface golden covers every depth, tone, and shape across light,
+dark, and high-contrast foundations. It uses the shared pinned golden harness;
+intentional baseline changes require tracked image review and before-and-after
+pull-request evidence.
 
 ## Decisions and known constraints
 
