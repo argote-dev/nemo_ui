@@ -15,9 +15,10 @@ Widget highContrastFoundationPreview() {
 }
 
 class _FoundationPreview extends StatelessWidget {
-  const _FoundationPreview({required this.theme});
+  const _FoundationPreview({required this.theme, this.child});
 
   final NemoThemeData theme;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -27,15 +28,37 @@ class _FoundationPreview extends StatelessWidget {
         builder: (BuildContext context) => Scaffold(
           backgroundColor: NemoTheme.of(context).semantic.surface,
           body: Center(
-            child: Text(
-              'Nemo foundation',
-              style: TextStyle(
-                color: NemoTheme.of(context).semantic.foreground,
-              ),
-            ),
+            child:
+                child ??
+                Text(
+                  'Nemo foundation',
+                  style: TextStyle(
+                    color: NemoTheme.of(context).semantic.foreground,
+                  ),
+                ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Native Flutter Widget Previewer definition for the Surface component.
+@Preview(name: 'Surface depths', group: 'Components')
+Widget surfacePreview() {
+  return _FoundationPreview(
+    theme: NemoThemeData.light(),
+    child: Wrap(
+      spacing: 24,
+      runSpacing: 24,
+      children: <Widget>[
+        for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values)
+          NemoSurface(
+            depth: depth,
+            tone: NemoSurfaceTone.surfaceVariant,
+            child: Text(depth.name),
+          ),
+      ],
+    ),
+  );
 }
