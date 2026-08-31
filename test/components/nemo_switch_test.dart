@@ -288,6 +288,9 @@ Widget _goldenSwitch(
 }) {
   final tokens = theme.components.switchControl;
   final stableTheme = theme.copyWith(
+    // Blurred shadows rasterize differently across Skia hosts. Keep the real
+    // state colors, outlines, focus ring, position, and icon in the baseline.
+    semantic: theme.semantic.copyWith(lowlightShadow: Colors.transparent),
     components: theme.components.copyWith(switchControl: tokens.copyWith()),
   );
   return Theme(
