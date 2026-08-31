@@ -53,7 +53,24 @@ void main() {
         components.outlineWidth,
         NemoComponentTokens.standard.outlineWidth,
       );
+      expect(components.button, NemoButtonTokens.standard);
     });
+
+    test(
+      'button tokens support copy, equality, state lookup, and interpolation',
+      () {
+        final NemoButtonTokens base = NemoButtonTokens.standard;
+        final NemoButtonTokens changed = base.copyWith(
+          pressed: base.pressed.copyWith(foregroundBlend: .2),
+        );
+
+        expect(base.copyWith(), base);
+        expect(changed, isNot(base));
+        expect(changed.styleFor(NemoButtonState.pressed).foregroundBlend, .2);
+        expect(NemoButtonTokens.lerp(base, changed, 1), changed);
+        expect(NemoButtonTokens.highContrast.pressed.shadowOpacity, 0);
+      },
+    );
 
     test('lerp interpolates token values', () {
       final NemoThemeData light = NemoThemeData.light();
