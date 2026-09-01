@@ -297,7 +297,6 @@ void main() {
       const Key disabledKey = ValueKey<String>('golden-disabled');
       await tester.pumpWidget(
         goldenTestApp(
-          disableAnimations: false,
           child: Wrap(
             children: <Widget>[
               _themedButton(NemoThemeData.light(), key: normalKey),
