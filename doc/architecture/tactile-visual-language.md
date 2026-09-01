@@ -29,13 +29,13 @@ must select a depth deliberately; it does not inherit an absolute elevation.
 Use `components.surface` and the foundation shadow metrics, rather than
 hard-coded color, blur, or offset values.
 
-| Depth | Intended reading | Current token mapping | Standard treatment |
-| --- | --- | --- | --- |
-| `deeplySunken` | A strongly recessed well for a persistent local value or inset. | `components.surface.deeplySunken` (`intensity: -2`) | Lowlight tonal overlay, paired inset shadows, strongest occlusion. |
-| `sunken` | A normal recessed track, field, or local container. | `components.surface.sunken` (`intensity: -1`) | Lowlight tonal overlay and paired inset shadows. |
-| `flat` | The dominant uninterrupted canvas or a neutral local plane. | `components.surface.flat` (`intensity: 0`) | No tactile shadow; only a restrained tonal boundary when required. |
-| `raised` | The ordinary actionable or grouped plane. | `components.surface.raised` (`intensity: 1`) | Highlight tonal overlay and paired outer shadows. |
-| `elevated` | The single most prominent local plane, such as a transient or primary grouping. | `components.surface.elevated` (`intensity: 2`) | Strongest paired outer shadows and separation. |
+| Depth | Intended reading | Token mapping | Light treatment | Dark treatment |
+| --- | --- | --- | --- | --- |
+| `deeplySunken` | A strongly recessed well for a persistent local value or inset. | `components.surface.deeplySunken` (`intensity: -2`) | Strongest lowlight overlay and paired inset occlusion. | The same strongest inset geometry, using dark lowlight and dark highlight roles. |
+| `sunken` | A normal recessed track, field, or local container. | `components.surface.sunken` (`intensity: -1`) | Quieter lowlight overlay and shorter, softer paired inset shadows. | The same quieter inset geometry; semantic dark roles retain the recess. |
+| `flat` | The dominant uninterrupted canvas or a neutral local plane. | `components.surface.flat` (`intensity: 0`) | Near-neutral material with no tactile shadow and a soft boundary. | Near-neutral dark material with no tactile shadow and a soft boundary. |
+| `raised` | The ordinary actionable or grouped plane. | `components.surface.raised` (`intensity: 1`) | Restrained highlight overlay with paired outer shadows and a non-dominant outline. | The same restrained raised geometry, with the dark highlight and black lowlight. |
+| `elevated` | The single most prominent local plane, such as a transient or primary grouping. | `components.surface.elevated` (`intensity: 2`) | Strongest raised overlay, blur, offset, and paired outer shadows. | The same strongest raised geometry, resolved through dark semantic colors. |
 
 `foundation.shadowBlur` and `foundation.shadowOffset` establish the shared
 shadow geometry. Each `NemoSurfaceDepthStyle` owns its blur, offset, shadow,
@@ -132,21 +132,19 @@ focus ring identifies the keyboard target. The switch exposes both its thumb
 position and check/minus icon, and the button label remains explicit. The
 result preserves hierarchy and state without relying on relief or color alone.
 
-## Required token evolution and delivery scope
+## Required token evolution and delivery status
 
-This issue records the contract; it does not change implementation tokens or
-component rendering. It does prescribe the following token changes for the
-delivery issues. They are internal theme-contract changes, not new public
-widget parameters.
+When this contract was authored in #22, it did not change implementation tokens
+or component rendering. It prescribes the following internal theme-contract
+changes for the delivery issues; none require new public widget parameters.
 
 | Owner | Required token change |
 | --- | --- |
-| `NemoSurface` | Recalibrate each `components.surface` depth style's tonal overlay, outline, shadow opacity, blur, and offset so adjacent depths remain distinct in light and dark modes; reduce standard raised/sunken outlines. `foundation` retains shared radius, blur, and offset, and `semantic` supplies surface, outline, highlight, and lowlight roles. |
+| `NemoSurface` | Completed by #23: `components.surface` now orders tonal overlay, shadow opacity, blur, and offset across all five depths in light and dark modes, with restrained standard `sunken`/`raised` outlines. `foundation` retains shared radius, blur, and offset, and `semantic` supplies surface, outline, highlight, and lowlight roles. |
 | `NemoButton` | Extend `components.button` state styles with surface-based neutral and restrained-accent treatments, plus an explicit inset pressed treatment. Its existing paint-only state model remains the seam; shared `components` retains target, padding, outline, and focus widths while `semantic` supplies action, foreground, outline, focus, and shadow roles. |
 | `NemoSwitch` | Extend `components.switchControl` beyond geometry and disabled opacity with tokens for track inset relief, thumb elevation, and on/off tonal treatment. Shared component, foundation, semantic, and motion tokens continue to provide focus, paired-light colors, target, and timing. |
 
-Implementation is deliberately deferred: #23 applies the shared depth and
-lighting contract to Surface, #24 to Button, #25 to Switch, #26 to the catalog
-composition, and #27 to shadow-preserving regression coverage. Each delivery
-must preserve this document's lighting, accessibility, and host-typography
-rules.
+Delivery is sequenced: #23 applies the shared depth and lighting contract to
+Surface, #24 to Button, #25 to Switch, #26 to the catalog composition, and #27
+to shadow-preserving regression coverage. Each delivery must preserve this
+document's lighting, accessibility, and host-typography rules.
