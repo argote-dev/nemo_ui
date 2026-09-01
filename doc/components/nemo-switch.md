@@ -67,5 +67,10 @@ Open **Components / Switch states** in
 `example/previews/foundation_previews.dart`, or run the example catalog to
 inspect localized, reduced-motion, text-scale, brightness, and high-contrast
 scenarios. Widget and semantics tests cover touch, mouse, keyboard, disabled,
-localized state, target size, reduced motion, RTL, state relief tokens, and
-deterministic light/dark/high-contrast visual regression evidence.
+localized state, target size, reduced motion, RTL, and state relief tokens. The
+canonical golden preserves a sunken track and raised thumb with real paired
+inset and outer shadows in standard contrast, alongside a separately visible
+shadow-free high-contrast scene. It pins the shared raster inputs and uses
+Ubuntu 24.04 x64 CI with Flutter 3.47.0 as canonical; local shadow-bearing captures are
+diagnostic only. Intentional baselines come from the matching canonical CI
+`*_testImage.png` and require tracked PNG review.

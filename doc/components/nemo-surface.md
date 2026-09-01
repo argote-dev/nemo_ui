@@ -103,12 +103,14 @@ contrast, and shadow-free high-contrast boundaries. The deterministic Surface
 golden composes a flat local plane with deeply sunken, sunken, raised, and
 elevated children in light, dark, and high-contrast content-bearing scenes:
 a persistent well, receiving field, grouped panel, and prominent action area.
-The golden suppresses blurred shadows because they vary between Skia hosts;
-token tests cover their ordered values, while the golden retains deterministic
-tone, outline, depth category, shape, and content composition. High contrast
-is shadow-free in both the token and golden contracts. It uses the shared
-pinned golden harness; intentional baseline changes require tracked image
-review and before-and-after pull-request evidence.
+The standard-contrast scenes retain paired highlight/lowlight outer and
+inset shadows, so the golden protects actual relief rather than only tones and
+outlines. High contrast is a separately visible shadow-free scene. It uses the
+shared pinned golden harness and the Ubuntu 24.04 x64 CI Flutter 3.47.0 raster environment
+as the canonical baseline source; local captures are diagnostic because blurred
+Skia shadows can differ by host. Intentional baseline changes require canonical
+CI `*_testImage.png` replacement, tracked image review, and before-and-after
+pull-request evidence.
 
 ## Decisions and known constraints
 

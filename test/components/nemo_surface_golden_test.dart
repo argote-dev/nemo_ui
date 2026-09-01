@@ -28,28 +28,11 @@ class _SurfaceDepthScenes extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: <Widget>[
-      _DepthScene(theme: _stableTheme(NemoThemeData.light())),
-      _DepthScene(theme: _stableTheme(NemoThemeData.dark())),
-      _DepthScene(theme: _stableTheme(NemoThemeData.highContrast())),
+      _DepthScene(theme: NemoThemeData.light()),
+      _DepthScene(theme: NemoThemeData.dark()),
+      // High contrast is a separately visible, shadow-free scene.
+      _DepthScene(theme: NemoThemeData.highContrast()),
     ],
-  );
-}
-
-NemoThemeData _stableTheme(NemoThemeData theme) {
-  final NemoSurfaceTokens surface = theme.components.surface;
-  return theme.copyWith(
-    components: theme.components.copyWith(
-      // Blurred shadows rasterize differently across Skia hosts. Token tests
-      // cover their ordered values; this golden keeps depth tone and outline
-      // evidence deterministic across local and CI platforms.
-      surface: surface.copyWith(
-        deeplySunken: surface.deeplySunken.copyWith(shadowOpacity: 0),
-        sunken: surface.sunken.copyWith(shadowOpacity: 0),
-        flat: surface.flat.copyWith(shadowOpacity: 0),
-        raised: surface.raised.copyWith(shadowOpacity: 0),
-        elevated: surface.elevated.copyWith(shadowOpacity: 0),
-      ),
-    ),
   );
 }
 

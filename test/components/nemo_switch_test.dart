@@ -329,20 +329,10 @@ Widget _goldenSwitch(
   FocusNode? focusNode,
   bool enabled = true,
 }) {
-  final tokens = theme.components.switchControl;
-  final stableTheme = theme.copyWith(
-    // Blurred shadows rasterize differently across Skia hosts. Keep the real
-    // state colors, outlines, focus ring, position, and icon in the baseline.
-    semantic: theme.semantic.copyWith(
-      highlightShadow: Colors.transparent,
-      lowlightShadow: Colors.transparent,
-    ),
-    components: theme.components.copyWith(switchControl: tokens.copyWith()),
-  );
   return Theme(
-    data: goldenThemeData(stableTheme),
+    data: goldenThemeData(theme),
     child: ColoredBox(
-      color: stableTheme.semantic.surface,
+      color: theme.semantic.surface,
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: NemoSwitch(

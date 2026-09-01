@@ -115,12 +115,14 @@ high-contrast shadow suppression, and content/progress/disabled contrast for
 every rendered state in light, dark, and high-contrast themes. The deterministic
 button golden is 960×640 physical pixels and includes normal, hovered,
 pressed/inset, focused dark, and disabled high-contrast evidence. It pins
-Android, DPR 1, English, no text scaling, a fixed animation preference, and
-the Ahem font; its content is glyph-free. It intentionally neutralizes blurred
-shadow colors because Skia rasterizes them differently across hosts; token and
-behavior tests cover the real raised and inset shadow treatments. Intentional
-baseline updates require tracked PNG review and before/after pull-request
-evidence.
+Android, DPR 1, English, no text scaling, a fixed animation preference, the
+Ahem font, and opaque scene backgrounds; its content is glyph-free.
+Standard-contrast button scenes preserve their real raised outer and pressed
+inset shadows; the separately visible high-contrast scene remains shadow-free.
+Ubuntu 24.04 x64 CI with Flutter 3.47.0 is the canonical raster environment;
+local captures are diagnostic because blurred Skia shadows can vary by host.
+Intentional baseline updates require canonical CI `*_testImage.png` replacement,
+tracked PNG review, and before/after pull-request evidence.
 
 ## Decisions and known constraints
 

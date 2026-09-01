@@ -59,10 +59,26 @@ comparison failure, CI uploads the generated failure images as an artifact.
 
 Every golden scene fixes its physical dimensions, device pixel ratio (`1`),
 Android platform, English locale, text scaling, a fixed animation preference,
-test font (`Ahem`), and theme configuration. Golden scenes remain glyph-free, so visual
-coverage does not depend on host text rasterization. Light, dark, and
-high-contrast foundation states must be represented when a component consumes
-foundation visual tokens.
+test font (`Ahem`), theme configuration, and opaque background composition.
+Golden scenes remain glyph-free, so visual coverage does not depend on host
+text rasterization. Light, dark, and high-contrast foundation states must be
+represented when a component consumes foundation visual tokens. Representative
+standard-contrast scenes retain real highlight, lowlight, outer, and inset
+shadows; separately visible high-contrast scenes retain their intentional
+shadow-free contract.
+
+The canonical raster environment is the Ubuntu 24.04 x64 GitHub Actions runner
+with Flutter 3.47.0. The selected golden scenarios run in the blocking CI step.
+Local comparisons are diagnostic only: Skia can rasterize blurred shadows
+differently on another host, so cross-host byte identity is not claimed.
+
+To intentionally update a baseline, use a failed canonical CI run as the source
+of truth. Download the `golden-failures-flutter-3.47.0` artifact and replace the
+tracked baseline with the matching `*_testImage.png`, inspect the image diff,
+and rerun the CI golden step. A local `--update-goldens` capture may help
+preview a change, but it must not be committed without this canonical CI
+replacement. A matching Docker environment is optional; the repository does
+not maintain container infrastructure for golden generation.
 
 Run the focused checks locally before opening a pull request:
 
