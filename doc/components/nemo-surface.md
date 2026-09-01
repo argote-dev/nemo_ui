@@ -103,9 +103,12 @@ contrast, and shadow-free high-contrast boundaries. The deterministic Surface
 golden composes a flat local plane with deeply sunken, sunken, raised, and
 elevated children in light, dark, and high-contrast content-bearing scenes:
 a persistent well, receiving field, grouped panel, and prominent action area.
-Standard scenes retain their paired shadows; high contrast intentionally does
-not. It uses the shared pinned golden harness; intentional baseline changes
-require tracked image review and before-and-after pull-request evidence.
+The golden suppresses blurred shadows because they vary between Skia hosts;
+token tests cover their ordered values, while the golden retains deterministic
+tone, outline, depth category, shape, and content composition. High contrast
+is shadow-free in both the token and golden contracts. It uses the shared
+pinned golden harness; intentional baseline changes require tracked image
+review and before-and-after pull-request evidence.
 
 ## Decisions and known constraints
 
