@@ -506,6 +506,8 @@ final class NemoSwitchTokens {
     required this.thumbDiameter,
     required this.trackOutlineOpacity,
     required this.disabledOpacity,
+    required this.off,
+    required this.on,
   });
 
   /// The horizontal track extent.
@@ -523,6 +525,12 @@ final class NemoSwitchTokens {
   /// Opacity applied while unavailable.
   final double disabledOpacity;
 
+  /// The tactile treatment for the off state.
+  final NemoSwitchStateStyle off;
+
+  /// The tactile treatment for the on state.
+  final NemoSwitchStateStyle on;
+
   /// Default soft-neumorphic switch values.
   static const NemoSwitchTokens standard = NemoSwitchTokens(
     trackWidth: 52,
@@ -530,6 +538,26 @@ final class NemoSwitchTokens {
     thumbDiameter: 24,
     trackOutlineOpacity: .72,
     disabledOpacity: .5,
+    off: NemoSwitchStateStyle(
+      trackPrimaryBlend: .035,
+      thumbPrimaryBlend: .08,
+      trackShadowOpacity: .42,
+      trackShadowBlurMultiplier: .45,
+      trackShadowOffsetMultiplier: .38,
+      thumbShadowOpacity: .48,
+      thumbShadowBlurMultiplier: .42,
+      thumbShadowOffsetMultiplier: .38,
+    ),
+    on: NemoSwitchStateStyle(
+      trackPrimaryBlend: .18,
+      thumbPrimaryBlend: .32,
+      trackShadowOpacity: .42,
+      trackShadowBlurMultiplier: .45,
+      trackShadowOffsetMultiplier: .38,
+      thumbShadowOpacity: .5,
+      thumbShadowBlurMultiplier: .42,
+      thumbShadowOffsetMultiplier: .38,
+    ),
   );
 
   /// High-contrast switch values preserve the explicit boundary.
@@ -539,6 +567,26 @@ final class NemoSwitchTokens {
     thumbDiameter: 24,
     trackOutlineOpacity: 1,
     disabledOpacity: .62,
+    off: NemoSwitchStateStyle(
+      trackPrimaryBlend: 0,
+      thumbPrimaryBlend: 0,
+      trackShadowOpacity: 0,
+      trackShadowBlurMultiplier: 0,
+      trackShadowOffsetMultiplier: 0,
+      thumbShadowOpacity: 0,
+      thumbShadowBlurMultiplier: 0,
+      thumbShadowOffsetMultiplier: 0,
+    ),
+    on: NemoSwitchStateStyle(
+      trackPrimaryBlend: .22,
+      thumbPrimaryBlend: .42,
+      trackShadowOpacity: 0,
+      trackShadowBlurMultiplier: 0,
+      trackShadowOffsetMultiplier: 0,
+      thumbShadowOpacity: 0,
+      thumbShadowBlurMultiplier: 0,
+      thumbShadowOffsetMultiplier: 0,
+    ),
   );
 
   /// Creates a copy with selectively replaced values.
@@ -548,12 +596,16 @@ final class NemoSwitchTokens {
     double? thumbDiameter,
     double? trackOutlineOpacity,
     double? disabledOpacity,
+    NemoSwitchStateStyle? off,
+    NemoSwitchStateStyle? on,
   }) => NemoSwitchTokens(
     trackWidth: trackWidth ?? this.trackWidth,
     trackHeight: trackHeight ?? this.trackHeight,
     thumbDiameter: thumbDiameter ?? this.thumbDiameter,
     trackOutlineOpacity: trackOutlineOpacity ?? this.trackOutlineOpacity,
     disabledOpacity: disabledOpacity ?? this.disabledOpacity,
+    off: off ?? this.off,
+    on: on ?? this.on,
   );
 
   /// Interpolates switch tokens.
@@ -571,6 +623,8 @@ final class NemoSwitchTokens {
       t,
     )!,
     disabledOpacity: lerpDouble(a.disabledOpacity, b.disabledOpacity, t)!,
+    off: NemoSwitchStateStyle.lerp(a.off, b.off, t),
+    on: NemoSwitchStateStyle.lerp(a.on, b.on, t),
   );
 
   @override
@@ -580,7 +634,9 @@ final class NemoSwitchTokens {
       trackHeight == other.trackHeight &&
       thumbDiameter == other.thumbDiameter &&
       trackOutlineOpacity == other.trackOutlineOpacity &&
-      disabledOpacity == other.disabledOpacity;
+      disabledOpacity == other.disabledOpacity &&
+      off == other.off &&
+      on == other.on;
 
   @override
   int get hashCode => Object.hash(
@@ -589,6 +645,137 @@ final class NemoSwitchTokens {
     thumbDiameter,
     trackOutlineOpacity,
     disabledOpacity,
+    off,
+    on,
+  );
+}
+
+/// State-specific relief and tonal values for [NemoSwitch].
+@immutable
+final class NemoSwitchStateStyle {
+  /// Creates a switch state treatment.
+  const NemoSwitchStateStyle({
+    required this.trackPrimaryBlend,
+    required this.thumbPrimaryBlend,
+    required this.trackShadowOpacity,
+    required this.trackShadowBlurMultiplier,
+    required this.trackShadowOffsetMultiplier,
+    required this.thumbShadowOpacity,
+    required this.thumbShadowBlurMultiplier,
+    required this.thumbShadowOffsetMultiplier,
+  });
+
+  /// Primary blend applied to the sunken track.
+  final double trackPrimaryBlend;
+
+  /// Primary blend applied to the raised thumb.
+  final double thumbPrimaryBlend;
+
+  /// Opacity of the track's paired inset shadows.
+  final double trackShadowOpacity;
+
+  /// Foundation blur multiplier for the track's inset shadows.
+  final double trackShadowBlurMultiplier;
+
+  /// Foundation offset multiplier for the track's inset shadows.
+  final double trackShadowOffsetMultiplier;
+
+  /// Opacity of the thumb's paired outer shadows.
+  final double thumbShadowOpacity;
+
+  /// Foundation blur multiplier for the thumb's outer shadows.
+  final double thumbShadowBlurMultiplier;
+
+  /// Foundation offset multiplier for the thumb's outer shadows.
+  final double thumbShadowOffsetMultiplier;
+
+  /// Creates a copy with selectively replaced values.
+  NemoSwitchStateStyle copyWith({
+    double? trackPrimaryBlend,
+    double? thumbPrimaryBlend,
+    double? trackShadowOpacity,
+    double? trackShadowBlurMultiplier,
+    double? trackShadowOffsetMultiplier,
+    double? thumbShadowOpacity,
+    double? thumbShadowBlurMultiplier,
+    double? thumbShadowOffsetMultiplier,
+  }) => NemoSwitchStateStyle(
+    trackPrimaryBlend: trackPrimaryBlend ?? this.trackPrimaryBlend,
+    thumbPrimaryBlend: thumbPrimaryBlend ?? this.thumbPrimaryBlend,
+    trackShadowOpacity: trackShadowOpacity ?? this.trackShadowOpacity,
+    trackShadowBlurMultiplier:
+        trackShadowBlurMultiplier ?? this.trackShadowBlurMultiplier,
+    trackShadowOffsetMultiplier:
+        trackShadowOffsetMultiplier ?? this.trackShadowOffsetMultiplier,
+    thumbShadowOpacity: thumbShadowOpacity ?? this.thumbShadowOpacity,
+    thumbShadowBlurMultiplier:
+        thumbShadowBlurMultiplier ?? this.thumbShadowBlurMultiplier,
+    thumbShadowOffsetMultiplier:
+        thumbShadowOffsetMultiplier ?? this.thumbShadowOffsetMultiplier,
+  );
+
+  /// Interpolates between two state treatments.
+  static NemoSwitchStateStyle lerp(
+    NemoSwitchStateStyle a,
+    NemoSwitchStateStyle b,
+    double t,
+  ) => NemoSwitchStateStyle(
+    trackPrimaryBlend: lerpDouble(a.trackPrimaryBlend, b.trackPrimaryBlend, t)!,
+    thumbPrimaryBlend: lerpDouble(a.thumbPrimaryBlend, b.thumbPrimaryBlend, t)!,
+    trackShadowOpacity: lerpDouble(
+      a.trackShadowOpacity,
+      b.trackShadowOpacity,
+      t,
+    )!,
+    trackShadowBlurMultiplier: lerpDouble(
+      a.trackShadowBlurMultiplier,
+      b.trackShadowBlurMultiplier,
+      t,
+    )!,
+    trackShadowOffsetMultiplier: lerpDouble(
+      a.trackShadowOffsetMultiplier,
+      b.trackShadowOffsetMultiplier,
+      t,
+    )!,
+    thumbShadowOpacity: lerpDouble(
+      a.thumbShadowOpacity,
+      b.thumbShadowOpacity,
+      t,
+    )!,
+    thumbShadowBlurMultiplier: lerpDouble(
+      a.thumbShadowBlurMultiplier,
+      b.thumbShadowBlurMultiplier,
+      t,
+    )!,
+    thumbShadowOffsetMultiplier: lerpDouble(
+      a.thumbShadowOffsetMultiplier,
+      b.thumbShadowOffsetMultiplier,
+      t,
+    )!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoSwitchStateStyle &&
+      trackPrimaryBlend == other.trackPrimaryBlend &&
+      thumbPrimaryBlend == other.thumbPrimaryBlend &&
+      trackShadowOpacity == other.trackShadowOpacity &&
+      trackShadowBlurMultiplier == other.trackShadowBlurMultiplier &&
+      trackShadowOffsetMultiplier == other.trackShadowOffsetMultiplier &&
+      thumbShadowOpacity == other.thumbShadowOpacity &&
+      thumbShadowBlurMultiplier == other.thumbShadowBlurMultiplier &&
+      thumbShadowOffsetMultiplier == other.thumbShadowOffsetMultiplier;
+
+  @override
+  int get hashCode => Object.hash(
+    trackPrimaryBlend,
+    thumbPrimaryBlend,
+    trackShadowOpacity,
+    trackShadowBlurMultiplier,
+    trackShadowOffsetMultiplier,
+    thumbShadowOpacity,
+    thumbShadowBlurMultiplier,
+    thumbShadowOffsetMultiplier,
   );
 }
 
@@ -993,26 +1180,26 @@ final class NemoSurfaceTokens {
   static const NemoSurfaceTokens standard = NemoSurfaceTokens(
     deeplySunken: NemoSurfaceDepthStyle(
       intensity: -2,
-      tonalOverlayOpacity: 0.10,
-      outlineOpacity: 0.32,
-      shadowOpacity: 0.58,
+      tonalOverlayOpacity: 0.13,
+      outlineOpacity: 0.16,
+      shadowOpacity: 0.62,
       blurMultiplier: 1,
       offsetMultiplier: 1,
       tonalColor: NemoSurfaceTonalColor.lowlightShadow,
     ),
     sunken: NemoSurfaceDepthStyle(
       intensity: -1,
-      tonalOverlayOpacity: 0.06,
-      outlineOpacity: 0.24,
+      tonalOverlayOpacity: 0.075,
+      outlineOpacity: 0.12,
       shadowOpacity: 0.42,
-      blurMultiplier: 0.7,
-      offsetMultiplier: 0.7,
+      blurMultiplier: 0.65,
+      offsetMultiplier: 0.65,
       tonalColor: NemoSurfaceTonalColor.lowlightShadow,
     ),
     flat: NemoSurfaceDepthStyle(
       intensity: 0,
-      tonalOverlayOpacity: 0,
-      outlineOpacity: 0.18,
+      tonalOverlayOpacity: 0.012,
+      outlineOpacity: 0.14,
       shadowOpacity: 0,
       blurMultiplier: 0,
       offsetMultiplier: 0,
@@ -1020,18 +1207,18 @@ final class NemoSurfaceTokens {
     ),
     raised: NemoSurfaceDepthStyle(
       intensity: 1,
-      tonalOverlayOpacity: 0.025,
-      outlineOpacity: 0.22,
+      tonalOverlayOpacity: 0.018,
+      outlineOpacity: 0.12,
       shadowOpacity: 0.42,
-      blurMultiplier: 0.7,
-      offsetMultiplier: 0.7,
+      blurMultiplier: 0.65,
+      offsetMultiplier: 0.65,
       tonalColor: NemoSurfaceTonalColor.highlightShadow,
     ),
     elevated: NemoSurfaceDepthStyle(
       intensity: 2,
-      tonalOverlayOpacity: 0.05,
-      outlineOpacity: 0.30,
-      shadowOpacity: 0.58,
+      tonalOverlayOpacity: 0.055,
+      outlineOpacity: 0.16,
+      shadowOpacity: 0.62,
       blurMultiplier: 1,
       offsetMultiplier: 1,
       tonalColor: NemoSurfaceTonalColor.highlightShadow,

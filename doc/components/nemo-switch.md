@@ -25,7 +25,12 @@ with keyboard focus management.
 
 ## States and interaction
 
-The component renders on/off, hover, focus, pressed, and disabled states.
+The component renders on/off, hover, focus, pressed, and disabled states. Its
+track is a sunken channel with paired inset shadows: lowlight toward the
+top-left and highlight toward the bottom-right. The thumb is a raised tactile
+element with the inverse paired outer shadows. On and off states combine thumb
+position, check/minus iconography, and restrained tonal changes; the track is
+never a full primary fill.
 Touch and mouse taps, Enter, and Space request the opposite value through
 `onChanged`; the caller supplies the next `value`. Hover is mouse-only.
 Interaction feedback changes paint only, never surrounding layout.
@@ -39,18 +44,22 @@ selection's accessible name. The hit target is at least 48 logical pixels
 high, supports text scaling, and has an explicit focus outline. Disabled
 controls cannot receive keyboard or pointer activation.
 
-Light, dark, and high-contrast themes consume semantic colors. The on/off
-state uses position plus check/minus icons and the outline, in addition to
-color. Motion uses `NemoMotionTokens.quick`; reduced motion resolves it to
-zero duration.
+Light and dark themes retain the same top-left lighting direction. In
+high-contrast themes, decorative shadows are intentionally absent; the 2 px
+boundary, thumb position, check/minus icons, tonal treatment, and 3 px focus
+ring preserve state and target clarity. Motion uses `NemoMotionTokens.quick`;
+reduced motion resolves it to zero duration.
 
 ## Tokens
 
 `NemoSwitchTokens` provides track dimensions, thumb diameter, track outline
-opacity, and disabled opacity. It is available from
-`NemoThemeData.components.switchControl`; it supports presets, `copyWith`,
-interpolation, equality, and hashing. Shared component, foundation, semantic,
-and motion tokens provide the target, focus ring, colors, shadows, and timing.
+opacity, disabled opacity, and `off`/`on` `NemoSwitchStateStyle` treatments.
+Each state style controls restrained track/thumb primary tonal blends plus the
+paired inset-track and raised-thumb shadow opacity, blur, and offset
+multipliers. It is available from `NemoThemeData.components.switchControl`; it
+supports presets, `copyWith`, interpolation, equality, and hashing. Shared
+component, foundation, semantic, and motion tokens provide the target, focus
+ring, colors, shadows, and timing.
 
 ## Preview and tests
 
@@ -58,4 +67,5 @@ Open **Components / Switch states** in
 `example/previews/foundation_previews.dart`, or run the example catalog to
 inspect localized, reduced-motion, text-scale, brightness, and high-contrast
 scenarios. Widget and semantics tests cover touch, mouse, keyboard, disabled,
-localized state, target size, and reduced motion.
+localized state, target size, reduced motion, RTL, state relief tokens, and
+deterministic light/dark/high-contrast visual regression evidence.

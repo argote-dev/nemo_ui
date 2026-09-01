@@ -108,6 +108,17 @@ void main() {
 
       final Rect switchBounds = tester.getRect(find.byType(NemoSwitch));
       expect(switchBounds.contains(tester.getCenter(find.text(label))), isTrue);
+      final Offset trackCenter = tester.getCenter(
+        find.byKey(const ValueKey<String>('nemo-switch-track')),
+      );
+      expect(
+        tester
+            .getCenter(
+              find.byKey(const ValueKey<String>('nemo-switch-indicator-off')),
+            )
+            .dx,
+        greaterThan(trackCenter.dx),
+      );
       expect(
         tester.getSemantics(find.byType(NemoSwitch)),
         matchesSemantics(
@@ -179,16 +190,15 @@ void main() {
         final TestGesture pointer = await tester.createGesture(
           kind: PointerDeviceKind.mouse,
         );
-        final AnimatedContainer before = tester.widget<AnimatedContainer>(
+        final CustomPaint before = tester.widget<CustomPaint>(
           find.byKey(const ValueKey<String>('nemo-switch-track')),
         );
-        final Color resting = (before.decoration! as BoxDecoration).color!;
         await pointer.addPointer(location: tester.getCenter(control));
         await tester.pump();
-        final AnimatedContainer hovered = tester.widget<AnimatedContainer>(
+        final CustomPaint hovered = tester.widget<CustomPaint>(
           find.byKey(const ValueKey<String>('nemo-switch-track')),
         );
-        expect((hovered.decoration! as BoxDecoration).color, isNot(resting));
+        expect(hovered.painter, isNot(before.painter));
         expect(tester.binding.transientCallbackCount, 0);
         await pointer.removePointer();
         await tester.pumpWidget(
@@ -231,51 +241,41 @@ void main() {
           theme: theme,
         ),
       );
-      final restingDecoration =
-          tester
-                  .widget<AnimatedContainer>(
-                    find.byKey(const ValueKey<String>('nemo-switch-track')),
-                  )
-                  .decoration!
-              as BoxDecoration;
-      final restingBorder = restingDecoration.border! as Border;
+      final CustomPaint resting = tester.widget<CustomPaint>(
+        find.byKey(const ValueKey<String>('nemo-switch-track')),
+      );
       focusNode.requestFocus();
       await tester.pumpAndSettle();
-      BoxDecoration decoration =
-          tester
-                  .widget<AnimatedContainer>(
-                    find.byKey(const ValueKey<String>('nemo-switch-track')),
-                  )
-                  .decoration!
-              as BoxDecoration;
-      final focusedBorder = decoration.border! as Border;
-      expect(focusedBorder.top.color, theme.semantic.focusRing);
-      expect(focusedBorder.top.width, theme.components.focusRingWidth);
-      expect(focusedBorder.top, isNot(restingBorder.top));
+      CustomPaint track = tester.widget<CustomPaint>(
+        find.byKey(const ValueKey<String>('nemo-switch-track')),
+      );
+      expect(track.painter, isNot(resting.painter));
       final TestGesture gesture = await tester.startGesture(
         tester.getCenter(find.byType(NemoSwitch)),
       );
       await tester.pump();
-      decoration =
-          tester
-                  .widget<AnimatedContainer>(
-                    find.byKey(const ValueKey<String>('nemo-switch-track')),
-                  )
-                  .decoration!
-              as BoxDecoration;
-      expect(decoration.boxShadow, isNull);
+      track = tester.widget<CustomPaint>(
+        find.byKey(const ValueKey<String>('nemo-switch-track')),
+      );
+      expect(track.painter, isNot(resting.painter));
       await gesture.up();
       await tester.pumpWidget(
         _host(const NemoSwitch(value: false, child: Text('Disabled'))),
       );
-      decoration =
-          tester
-                  .widget<AnimatedContainer>(
-                    find.byKey(const ValueKey<String>('nemo-switch-track')),
-                  )
-                  .decoration!
-              as BoxDecoration;
-      expect(decoration.boxShadow, isNull);
+      final Opacity disabledOpacity = tester.widget<Opacity>(
+        find.descendant(
+          of: find.byType(NemoSwitch),
+          matching: find.byType(Opacity),
+        ),
+      );
+      expect(
+        disabledOpacity.opacity,
+        theme.components.switchControl.disabledOpacity,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('nemo-switch-track')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders deterministic representative states', (tester) async {
@@ -333,7 +333,10 @@ Widget _goldenSwitch(
   final stableTheme = theme.copyWith(
     // Blurred shadows rasterize differently across Skia hosts. Keep the real
     // state colors, outlines, focus ring, position, and icon in the baseline.
-    semantic: theme.semantic.copyWith(lowlightShadow: Colors.transparent),
+    semantic: theme.semantic.copyWith(
+      highlightShadow: Colors.transparent,
+      lowlightShadow: Colors.transparent,
+    ),
     components: theme.components.copyWith(switchControl: tokens.copyWith()),
   );
   return Theme(
