@@ -93,14 +93,105 @@ void main() {
       expect(tester.binding.transientCallbackCount, 0);
     });
 
-    test('high contrast collapses the two levels on each side of flat', () {
-      final NemoSurfaceTokens tokens =
-          NemoThemeData.highContrast().components.surface;
+    test('standard depth tokens form a restrained five-level hierarchy in both themes', () {
+      for (final NemoThemeData theme in <NemoThemeData>[
+        NemoThemeData.light(),
+        NemoThemeData.dark(),
+      ]) {
+        final NemoSurfaceTokens tokens = theme.components.surface;
 
-      expect(tokens.deeplySunken, tokens.sunken);
-      expect(tokens.raised, tokens.elevated);
-      expect(tokens.flat.intensity, 0);
+        expect(
+          tokens.deeplySunken.intensity,
+          lessThan(tokens.sunken.intensity),
+        );
+        expect(tokens.sunken.intensity, lessThan(tokens.flat.intensity));
+        expect(tokens.flat.intensity, lessThan(tokens.raised.intensity));
+        expect(tokens.raised.intensity, lessThan(tokens.elevated.intensity));
+
+        expect(
+          tokens.deeplySunken.tonalOverlayOpacity,
+          greaterThan(tokens.sunken.tonalOverlayOpacity),
+        );
+        expect(tokens.sunken.tonalOverlayOpacity, greaterThan(0));
+        expect(tokens.raised.tonalOverlayOpacity, greaterThan(0));
+        expect(
+          tokens.elevated.tonalOverlayOpacity,
+          greaterThan(tokens.raised.tonalOverlayOpacity),
+        );
+        expect(
+          tokens.flat.tonalOverlayOpacity,
+          lessThan(tokens.sunken.tonalOverlayOpacity),
+        );
+        expect(
+          tokens.flat.tonalOverlayOpacity,
+          lessThan(tokens.raised.tonalOverlayOpacity),
+        );
+
+        expect(
+          tokens.deeplySunken.shadowOpacity,
+          greaterThan(tokens.sunken.shadowOpacity),
+        );
+        expect(tokens.sunken.shadowOpacity, greaterThan(0));
+        expect(tokens.flat.shadowOpacity, 0);
+        expect(
+          tokens.elevated.shadowOpacity,
+          greaterThan(tokens.raised.shadowOpacity),
+        );
+        expect(tokens.raised.shadowOpacity, greaterThan(0));
+        expect(
+          tokens.deeplySunken.blurMultiplier,
+          greaterThan(tokens.sunken.blurMultiplier),
+        );
+        expect(
+          tokens.elevated.blurMultiplier,
+          greaterThan(tokens.raised.blurMultiplier),
+        );
+        expect(
+          tokens.deeplySunken.offsetMultiplier,
+          greaterThan(tokens.sunken.offsetMultiplier),
+        );
+        expect(
+          tokens.elevated.offsetMultiplier,
+          greaterThan(tokens.raised.offsetMultiplier),
+        );
+
+        expect(tokens.sunken.outlineOpacity, lessThan(0.2));
+        expect(tokens.raised.outlineOpacity, lessThan(0.2));
+        for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values) {
+          final NemoSurfaceDepthStyle style = tokens.styleFor(depth);
+          for (final Color baseTone in <Color>[
+            theme.semantic.surface,
+            theme.semantic.surfaceVariant,
+          ]) {
+            final Color renderedTone = _postOverlayTone(theme, style, baseTone);
+            expect(
+              _contrastRatio(theme.semantic.foreground, renderedTone),
+              greaterThanOrEqualTo(4.5),
+            );
+          }
+        }
+      }
     });
+
+    test(
+      'high contrast collapses depth while keeping 2px explicit boundaries',
+      () {
+        final NemoThemeData theme = NemoThemeData.highContrast();
+        final NemoSurfaceTokens tokens = theme.components.surface;
+
+        expect(tokens.deeplySunken, tokens.sunken);
+        expect(tokens.raised, tokens.elevated);
+        expect(tokens.flat.intensity, 0);
+        expect(theme.components.outlineWidth, 2);
+        for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values) {
+          final NemoSurfaceDepthStyle style = tokens.styleFor(depth);
+          expect(style.shadowOpacity, 0);
+          expect(style.blurMultiplier, 0);
+          expect(style.offsetMultiplier, 0);
+          expect(style.outlineOpacity, greaterThan(0));
+        }
+      },
+    );
 
     test('surface token values support copy, equality, and interpolation', () {
       final NemoSurfaceTokens base = NemoSurfaceTokens.standard;
@@ -228,4 +319,34 @@ void _surfaceVocabularyTests() {
       expect(NemoSurfaceDepthStyle.lerp(style, changed, 1), changed);
     },
   );
+}
+
+Color _postOverlayTone(
+  NemoThemeData theme,
+  NemoSurfaceDepthStyle style,
+  Color baseTone,
+) {
+  final Color overlay = switch (style.tonalColor) {
+    NemoSurfaceTonalColor.highlightShadow => theme.semantic.highlightShadow,
+    NemoSurfaceTonalColor.lowlightShadow => theme.semantic.lowlightShadow,
+    NemoSurfaceTonalColor.foreground => theme.semantic.foreground,
+    NemoSurfaceTonalColor.outline => theme.semantic.outline,
+    NemoSurfaceTonalColor.surfaceVariant => theme.semantic.surfaceVariant,
+  };
+  return Color.alphaBlend(
+    overlay.withValues(alpha: style.tonalOverlayOpacity),
+    baseTone,
+  );
+}
+
+double _contrastRatio(Color foreground, Color background) {
+  final double lighter =
+      foreground.computeLuminance() > background.computeLuminance()
+      ? foreground.computeLuminance()
+      : background.computeLuminance();
+  final double darker =
+      foreground.computeLuminance() > background.computeLuminance()
+      ? background.computeLuminance()
+      : foreground.computeLuminance();
+  return (lighter + 0.05) / (darker + 0.05);
 }
