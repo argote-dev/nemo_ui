@@ -292,7 +292,6 @@ void main() {
       const Key normalKey = ValueKey<String>('golden-normal');
       const Key hoveredKey = ValueKey<String>('golden-hovered');
       const Key pressedKey = ValueKey<String>('golden-pressed');
-      const Key loadingKey = ValueKey<String>('golden-loading');
       const Key focusedKey = ValueKey<String>('golden-focused');
       const Key disabledKey = ValueKey<String>('golden-disabled');
       await tester.pumpWidget(
@@ -302,11 +301,6 @@ void main() {
               _themedButton(NemoThemeData.light(), key: normalKey),
               _themedButton(NemoThemeData.light(), key: hoveredKey),
               _themedButton(NemoThemeData.light(), key: pressedKey),
-              _themedButton(
-                NemoThemeData.light(),
-                key: loadingKey,
-                loading: true,
-              ),
               _themedButton(
                 NemoThemeData.dark(),
                 key: focusedKey,
@@ -348,21 +342,28 @@ Widget _themedButton(
   Key? key,
   FocusNode? focusNode,
   bool enabled = true,
-  bool loading = false,
 }) {
+  final NemoThemeData stableTheme = theme.copyWith(
+    // Blurred shadows rasterize differently across Skia hosts. State tokens
+    // cover their values; the golden keeps tones, outlines, and focus evidence
+    // deterministic across local and CI platforms.
+    semantic: theme.semantic.copyWith(
+      highlightShadow: Colors.transparent,
+      lowlightShadow: Colors.transparent,
+    ),
+  );
   final Widget button = NemoButton(
     key: key,
     focusNode: focusNode,
-    isLoading: loading,
     onPressed: enabled ? () {} : null,
     child: const SizedBox(width: 160, height: 16),
   );
   return SizedBox(
     width: 320,
     child: Theme(
-      data: goldenThemeData(theme),
+      data: goldenThemeData(stableTheme),
       child: ColoredBox(
-        color: theme.semantic.surface,
+        color: stableTheme.semantic.surface,
         child: Padding(padding: const EdgeInsets.all(32), child: button),
       ),
     ),

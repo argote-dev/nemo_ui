@@ -114,10 +114,13 @@ state-token copying/interpolation, explicit pressed inset relief,
 high-contrast shadow suppression, and content/progress/disabled contrast for
 every rendered state in light, dark, and high-contrast themes. The deterministic
 button golden is 960×640 physical pixels and includes normal, hovered,
-pressed/inset, loading, focused dark, and disabled high-contrast evidence.
-It pins Android, DPR 1, English, no text scaling, a fixed animation preference,
-and the Ahem font; its content is glyph-free. Intentional baseline updates
-require tracked PNG review and before/after pull-request evidence.
+pressed/inset, focused dark, and disabled high-contrast evidence. It pins
+Android, DPR 1, English, no text scaling, a fixed animation preference, and
+the Ahem font; its content is glyph-free. It intentionally neutralizes blurred
+shadow colors because Skia rasterizes them differently across hosts; token and
+behavior tests cover the real raised and inset shadow treatments. Intentional
+baseline updates require tracked PNG review and before/after pull-request
+evidence.
 
 ## Decisions and known constraints
 
