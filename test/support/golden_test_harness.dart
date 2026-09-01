@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
-/// Configures a widget test view for a deterministic golden capture.
+/// Configures the view inputs shared by canonical golden captures.
 ///
-/// Golden scenes use a fixed physical size and device-pixel ratio. Pair this
-/// with [goldenTestApp] to pin the remaining environment inputs.
+/// Canonical baselines are rasterized by the Ubuntu 24.04 x64 GitHub Actions
+/// job using Flutter 3.47.0. Local captures are useful diagnostics, but Skia does not
+/// promise byte-identical blurred-shadow output across hosts. Pair this with
+/// [goldenTestApp] to pin the remaining scene inputs.
 void configureGoldenTest(WidgetTester tester, {required Size physicalSize}) {
   tester.view.physicalSize = physicalSize;
   tester.view.devicePixelRatio = 1;
@@ -20,8 +22,11 @@ ThemeData goldenThemeData(NemoThemeData theme) => ThemeData(
   extensions: <ThemeExtension<dynamic>>[theme],
 );
 
-/// Hosts [child] in the fixed locale, text scale, animation, and font setup
-/// used for golden captures.
+/// Hosts [child] with the pinned locale, platform, font, text scale, and
+/// animation inputs used by canonical golden captures.
+///
+/// Each scene must provide its own opaque background, rather than inheriting
+/// compositor state from a test host.
 Widget goldenTestApp({
   required Widget child,
   NemoThemeData? theme,

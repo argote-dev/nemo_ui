@@ -74,10 +74,22 @@ test's `failures/` directory; CI uploads those diagnostics for failed golden
 steps. Do not use `--update-goldens` to accept an unexplained regression.
 
 Golden scenes pin their physical dimensions, device-pixel ratio, Android
-platform, English locale, no text scaling, a fixed animation preference, and
-the Ahem test font. Keep scene content glyph-free so font rasterization cannot
-conceal a visual regression. Blurred shadows are excluded only where Skia host
-rendering is non-deterministic; token and behavior tests still cover them.
+platform, English locale, no text scaling, a fixed animation preference, the
+Ahem test font, and an opaque scene background. Keep scene content glyph-free
+so font rasterization cannot conceal a visual regression. Representative light
+and dark scenes preserve real highlight, lowlight, outer, and inset shadows;
+high-contrast scenes remain separately visible and shadow-free.
+
+The canonical raster environment is the Ubuntu 24.04 x64 GitHub Actions runner
+using Flutter 3.47.0. A local golden run is a diagnostic and may not be byte-identical
+when Skia rasterizes blurred shadows on another host. Do not commit a baseline
+created only with a non-canonical local `--update-goldens` run. For an
+intentional update, first let the canonical CI golden check fail, download its
+`golden-failures-flutter-3.47.0` artifact, replace each tracked baseline with
+that scenario's `*_testImage.png`, review the image diff, and rerun CI to verify
+the new canonical baseline. Docker can be used locally when an equivalent
+Ubuntu Flutter 3.47.0 environment is available, but the repository does not
+require or provide a container image.
 
 ## Public API
 

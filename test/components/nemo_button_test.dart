@@ -343,15 +343,6 @@ Widget _themedButton(
   FocusNode? focusNode,
   bool enabled = true,
 }) {
-  final NemoThemeData stableTheme = theme.copyWith(
-    // Blurred shadows rasterize differently across Skia hosts. State tokens
-    // cover their values; the golden keeps tones, outlines, and focus evidence
-    // deterministic across local and CI platforms.
-    semantic: theme.semantic.copyWith(
-      highlightShadow: Colors.transparent,
-      lowlightShadow: Colors.transparent,
-    ),
-  );
   final Widget button = NemoButton(
     key: key,
     focusNode: focusNode,
@@ -361,9 +352,9 @@ Widget _themedButton(
   return SizedBox(
     width: 320,
     child: Theme(
-      data: goldenThemeData(stableTheme),
+      data: goldenThemeData(theme),
       child: ColoredBox(
-        color: stableTheme.semantic.surface,
+        color: theme.semantic.surface,
         child: Padding(padding: const EdgeInsets.all(32), child: button),
       ),
     ),
