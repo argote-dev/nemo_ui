@@ -74,12 +74,20 @@ void main() {
 
     test('switch tokens support copy, equality, and interpolation', () {
       final NemoSwitchTokens base = NemoSwitchTokens.standard;
-      final NemoSwitchTokens changed = base.copyWith(trackWidth: 56);
+      final NemoSwitchTokens changed = base.copyWith(
+        trackWidth: 56,
+        on: base.on.copyWith(thumbPrimaryBlend: .4),
+      );
 
       expect(base.copyWith(), base);
       expect(changed, isNot(base));
+      expect(changed.on.thumbPrimaryBlend, .4);
       expect(NemoSwitchTokens.lerp(base, changed, 1), changed);
       expect(NemoSwitchTokens.highContrast.trackOutlineOpacity, 1);
+      expect(NemoSwitchTokens.standard.off.trackShadowOpacity, greaterThan(0));
+      expect(NemoSwitchTokens.standard.on.thumbShadowOpacity, greaterThan(0));
+      expect(NemoSwitchTokens.highContrast.off.trackShadowOpacity, 0);
+      expect(NemoSwitchTokens.highContrast.on.thumbShadowOpacity, 0);
       expect(NemoComponentTokens.standard.switchControl, base);
     });
 

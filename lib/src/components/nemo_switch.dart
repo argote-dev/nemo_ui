@@ -77,20 +77,12 @@ class _NemoSwitchState extends State<NemoSwitch> {
     final NemoSwitchTokens tokens = theme.components.switchControl;
     final bool enabled = _enabled;
     final Duration duration = theme.motion.resolveFor(context).quick;
+    final NemoSwitchStateStyle stateStyle = widget.value
+        ? tokens.on
+        : tokens.off;
     final String stateLabel = widget.value
         ? NemoLocalizations.of(context).on
         : NemoLocalizations.of(context).off;
-    final Color active = widget.value
-        ? theme.semantic.primary
-        : theme.semantic.surfaceVariant;
-    final Color interactiveTone = widget.value
-        ? Color.lerp(active, theme.semantic.onPrimary, .12)!
-        : Color.lerp(active, theme.semantic.primary, .12)!;
-    final Color track = _pressed
-        ? Color.lerp(interactiveTone, theme.semantic.foreground, .12)!
-        : _hovered || _focused
-        ? interactiveTone
-        : active;
 
     return MergeSemantics(
       child: Semantics(
@@ -138,77 +130,92 @@ class _NemoSwitchState extends State<NemoSwitch> {
                             : ExcludeSemantics(child: widget.child),
                       ),
                       SizedBox(width: theme.foundation.space12),
-                      AnimatedContainer(
-                        key: const ValueKey<String>('nemo-switch-track'),
+                      TweenAnimationBuilder<NemoSwitchStateStyle>(
+                        tween: _NemoSwitchStyleTween(end: stateStyle),
                         duration: duration,
                         curve: theme.motion.standardCurve,
-                        width: tokens.trackWidth,
-                        height: tokens.trackHeight,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: track,
-                          borderRadius: BorderRadius.circular(
-                            tokens.trackHeight / 2,
-                          ),
-                          border: Border.all(
-                            color: _focused
-                                ? theme.semantic.focusRing
-                                : theme.semantic.outline.withValues(
-                                    alpha: tokens.trackOutlineOpacity,
-                                  ),
-                            width: _focused
-                                ? theme.components.focusRingWidth
-                                : theme.components.outlineWidth,
-                          ),
-                          boxShadow:
-                              _pressed ||
-                                  !enabled ||
-                                  theme.semantic.lowlightShadow ==
-                                      Colors.transparent
-                              ? null
-                              : <BoxShadow>[
-                                  BoxShadow(
-                                    color: theme.semantic.lowlightShadow
-                                        .withValues(alpha: .25),
-                                    blurRadius:
-                                        theme.foundation.shadowBlur * .3,
-                                    offset: Offset(
-                                      0,
-                                      theme.foundation.shadowOffset * .2,
+                        builder:
+                            (
+                              BuildContext context,
+                              NemoSwitchStateStyle style,
+                              Widget? child,
+                            ) {
+                              final double interactionBlend = _pressed
+                                  ? .12
+                                  : _hovered || _focused
+                                  ? .06
+                                  : 0;
+                              final Color track = Color.lerp(
+                                Color.lerp(
+                                  theme.semantic.surfaceVariant,
+                                  theme.semantic.primary,
+                                  style.trackPrimaryBlend,
+                                )!,
+                                theme.semantic.foreground,
+                                interactionBlend,
+                              )!;
+                              final Color thumb = Color.lerp(
+                                Color.lerp(
+                                  theme.semantic.surface,
+                                  theme.semantic.primary,
+                                  style.thumbPrimaryBlend,
+                                )!,
+                                theme.semantic.foreground,
+                                interactionBlend / 2,
+                              )!;
+                              return CustomPaint(
+                                key: const ValueKey<String>(
+                                  'nemo-switch-track',
+                                ),
+                                painter: _NemoSwitchTrackPainter(
+                                  theme: theme,
+                                  style: style,
+                                  color: track,
+                                  focused: _focused,
+                                  enabled: enabled,
+                                ),
+                                child: SizedBox(
+                                  width: tokens.trackWidth,
+                                  height: tokens.trackHeight,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: AnimatedAlign(
+                                      duration: duration,
+                                      curve: theme.motion.standardCurve,
+                                      alignment: widget.value
+                                          ? AlignmentDirectional.centerEnd
+                                          : AlignmentDirectional.centerStart,
+                                      child: CustomPaint(
+                                        painter: _NemoSwitchThumbPainter(
+                                          theme: theme,
+                                          style: style,
+                                          color: thumb,
+                                          enabled: enabled,
+                                        ),
+                                        child: SizedBox(
+                                          width: tokens.thumbDiameter,
+                                          height: tokens.thumbDiameter,
+                                          child: CustomPaint(
+                                            key: ValueKey<String>(
+                                              widget.value
+                                                  ? 'nemo-switch-indicator-on'
+                                                  : 'nemo-switch-indicator-off',
+                                            ),
+                                            painter:
+                                                _NemoSwitchIndicatorPainter(
+                                                  checked: widget.value,
+                                                  color: widget.value
+                                                      ? theme.semantic.onPrimary
+                                                      : theme.semantic.primary,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ],
-                        ),
-                        child: AnimatedAlign(
-                          duration: duration,
-                          curve: theme.motion.standardCurve,
-                          alignment: widget.value
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            width: tokens.thumbDiameter,
-                            height: tokens.thumbDiameter,
-                            decoration: BoxDecoration(
-                              color: widget.value
-                                  ? theme.semantic.onPrimary
-                                  : theme.semantic.foreground,
-                              shape: BoxShape.circle,
-                            ),
-                            child: CustomPaint(
-                              key: ValueKey<String>(
-                                widget.value
-                                    ? 'nemo-switch-indicator-on'
-                                    : 'nemo-switch-indicator-off',
-                              ),
-                              painter: _NemoSwitchIndicatorPainter(
-                                checked: widget.value,
-                                color: widget.value
-                                    ? theme.semantic.primary
-                                    : theme.semantic.surface,
-                              ),
-                            ),
-                          ),
-                        ),
+                                ),
+                              );
+                            },
                       ),
                     ],
                   ),
@@ -220,6 +227,133 @@ class _NemoSwitchState extends State<NemoSwitch> {
       ),
     );
   }
+}
+
+final class _NemoSwitchStyleTween extends Tween<NemoSwitchStateStyle> {
+  _NemoSwitchStyleTween({required NemoSwitchStateStyle end}) : super(end: end);
+
+  @override
+  NemoSwitchStateStyle lerp(double t) =>
+      NemoSwitchStateStyle.lerp(begin!, end!, t);
+}
+
+class _NemoSwitchTrackPainter extends CustomPainter {
+  const _NemoSwitchTrackPainter({
+    required this.theme,
+    required this.style,
+    required this.color,
+    required this.focused,
+    required this.enabled,
+  });
+
+  final NemoThemeData theme;
+  final NemoSwitchStateStyle style;
+  final Color color;
+  final bool focused;
+  final bool enabled;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(size.height / 2),
+    );
+    canvas.drawRRect(shape, Paint()..color = color);
+    if (enabled && style.trackShadowOpacity > 0) {
+      final Offset diagonal = Offset(
+        theme.foundation.shadowOffset * style.trackShadowOffsetMultiplier,
+        theme.foundation.shadowOffset * style.trackShadowOffsetMultiplier,
+      );
+      final double blur =
+          theme.foundation.shadowBlur * style.trackShadowBlurMultiplier;
+      canvas.save();
+      canvas.clipRRect(shape);
+      for (final (Offset offset, Color shadow) in <(Offset, Color)>[
+        (-diagonal, theme.semantic.lowlightShadow),
+        (diagonal, theme.semantic.highlightShadow),
+      ]) {
+        canvas.drawRRect(
+          shape.shift(offset),
+          Paint()
+            ..color = shadow.withValues(alpha: style.trackShadowOpacity)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
+        );
+      }
+      canvas.restore();
+    }
+    final bool hasFocus = focused;
+    final double outlineWidth = hasFocus
+        ? theme.components.focusRingWidth
+        : theme.components.outlineWidth;
+    canvas.drawRRect(
+      shape.deflate(outlineWidth / 2),
+      Paint()
+        ..color = hasFocus
+            ? theme.semantic.focusRing
+            : theme.semantic.outline.withValues(
+                alpha: theme.components.switchControl.trackOutlineOpacity,
+              )
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = outlineWidth,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _NemoSwitchTrackPainter oldDelegate) =>
+      theme != oldDelegate.theme ||
+      style != oldDelegate.style ||
+      color != oldDelegate.color ||
+      focused != oldDelegate.focused ||
+      enabled != oldDelegate.enabled;
+}
+
+class _NemoSwitchThumbPainter extends CustomPainter {
+  const _NemoSwitchThumbPainter({
+    required this.theme,
+    required this.style,
+    required this.color,
+    required this.enabled,
+  });
+
+  final NemoThemeData theme;
+  final NemoSwitchStateStyle style;
+  final Color color;
+  final bool enabled;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect shape = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(size.shortestSide / 2),
+    );
+    if (enabled && style.thumbShadowOpacity > 0) {
+      final Offset diagonal = Offset(
+        theme.foundation.shadowOffset * style.thumbShadowOffsetMultiplier,
+        theme.foundation.shadowOffset * style.thumbShadowOffsetMultiplier,
+      );
+      final double blur =
+          theme.foundation.shadowBlur * style.thumbShadowBlurMultiplier;
+      for (final (Offset offset, Color shadow) in <(Offset, Color)>[
+        (-diagonal, theme.semantic.highlightShadow),
+        (diagonal, theme.semantic.lowlightShadow),
+      ]) {
+        canvas.drawRRect(
+          shape.shift(offset),
+          Paint()
+            ..color = shadow.withValues(alpha: style.thumbShadowOpacity)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
+        );
+      }
+    }
+    canvas.drawRRect(shape, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _NemoSwitchThumbPainter oldDelegate) =>
+      theme != oldDelegate.theme ||
+      style != oldDelegate.style ||
+      color != oldDelegate.color ||
+      enabled != oldDelegate.enabled;
 }
 
 class _NemoSwitchIndicatorPainter extends CustomPainter {
