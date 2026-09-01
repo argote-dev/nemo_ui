@@ -5,39 +5,40 @@ import 'package:nemo_ui/nemo_ui.dart';
 import '../support/golden_test_harness.dart';
 
 void main() {
-  testWidgets('renders composed light, dark, and high-contrast depth scenes', (
-    WidgetTester tester,
-  ) async {
-    configureGoldenTest(tester, physicalSize: const Size(720, 900));
+  testWidgets(
+    'renders composed light, dark, and high-contrast material scenes',
+    (WidgetTester tester) async {
+      configureGoldenTest(tester, physicalSize: const Size(720, 900));
 
-    await tester.pumpWidget(
-      goldenTestApp(scaffold: false, child: const _SurfaceDepthScenes()),
-    );
+      await tester.pumpWidget(
+        goldenTestApp(scaffold: false, child: const _SurfaceMaterialScenes()),
+      );
 
-    expect(find.byType(NemoSurface), findsNWidgets(15));
-    await expectLater(
-      find.byType(MaterialApp),
-      matchesGoldenFile('goldens/nemo_surface.png'),
-    );
-  });
+      expect(find.byType(NemoSurface), findsNWidgets(15));
+      await expectLater(
+        find.byType(MaterialApp),
+        matchesGoldenFile('goldens/nemo_surface.png'),
+      );
+    },
+  );
 }
 
-class _SurfaceDepthScenes extends StatelessWidget {
-  const _SurfaceDepthScenes();
+class _SurfaceMaterialScenes extends StatelessWidget {
+  const _SurfaceMaterialScenes();
 
   @override
   Widget build(BuildContext context) => Column(
     children: <Widget>[
-      _DepthScene(theme: NemoThemeData.light()),
-      _DepthScene(theme: NemoThemeData.dark()),
+      _MaterialScene(theme: NemoThemeData.light()),
+      _MaterialScene(theme: NemoThemeData.dark()),
       // High contrast is a separately visible, shadow-free scene.
-      _DepthScene(theme: NemoThemeData.highContrast()),
+      _MaterialScene(theme: NemoThemeData.highContrast()),
     ],
   );
 }
 
-class _DepthScene extends StatelessWidget {
-  const _DepthScene({required this.theme});
+class _MaterialScene extends StatelessWidget {
+  const _MaterialScene({required this.theme});
 
   final NemoThemeData theme;
 
@@ -52,28 +53,28 @@ class _DepthScene extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: NemoSurface(
-            depth: NemoSurfaceDepth.flat,
-            shape: NemoSurfaceShape.roundedLarge,
+            material: NemoMaterial.base,
+            cornerRole: NemoCornerRole.panel,
             padding: const EdgeInsets.all(20),
             child: Row(
               children: <Widget>[
-                _DepthTile(
-                  depth: NemoSurfaceDepth.deeplySunken,
+                _MaterialTile(
+                  material: NemoMaterial.recessed,
                   child: const _WellContent(),
                 ),
                 const SizedBox(width: 16),
-                _DepthTile(
-                  depth: NemoSurfaceDepth.sunken,
+                _MaterialTile(
+                  material: NemoMaterial.recessed,
                   child: const _FieldContent(),
                 ),
                 const SizedBox(width: 16),
-                _DepthTile(
-                  depth: NemoSurfaceDepth.raised,
+                _MaterialTile(
+                  material: NemoMaterial.raised,
                   child: const _PanelContent(),
                 ),
                 const SizedBox(width: 16),
-                _DepthTile(
-                  depth: NemoSurfaceDepth.elevated,
+                _MaterialTile(
+                  material: NemoMaterial.floating,
                   child: const _ActionContent(),
                 ),
               ],
@@ -85,17 +86,17 @@ class _DepthScene extends StatelessWidget {
   );
 }
 
-class _DepthTile extends StatelessWidget {
-  const _DepthTile({required this.depth, required this.child});
+class _MaterialTile extends StatelessWidget {
+  const _MaterialTile({required this.material, required this.child});
 
-  final NemoSurfaceDepth depth;
+  final NemoMaterial material;
   final Widget child;
 
   @override
   Widget build(BuildContext context) => Expanded(
     child: NemoSurface(
-      depth: depth,
-      shape: NemoSurfaceShape.roundedMedium,
+      material: material,
+      cornerRole: NemoCornerRole.panel,
       padding: const EdgeInsets.all(12),
       child: child,
     ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
+import '../nemo_page_shell.dart';
+
 /// Demonstrates each Nemo surface treatment in a spacious responsive grid.
 class SurfaceCatalogPage extends StatelessWidget {
   /// Creates the surface catalog page.
@@ -12,10 +14,10 @@ class SurfaceCatalogPage extends StatelessWidget {
     final NemoLocalizations strings = NemoLocalizations.of(context);
     final Widget? brandMark = NemoAssetScope.of(context)
         .widgetFor(NemoAsset.brandMark, context);
-    return Scaffold(
+    return NemoPageShell(
       key: const ValueKey<String>('NemoSurfaceScreen'),
-      appBar: AppBar(title: const Text('NemoSurface')),
-      body: LayoutBuilder(
+      title: 'NemoSurface',
+      child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double gap = theme.foundation.space24;
           final double available = constraints.maxWidth - (gap * 2);
@@ -42,15 +44,15 @@ class SurfaceCatalogPage extends StatelessWidget {
                 spacing: gap,
                 runSpacing: gap,
                 children: <Widget>[
-                  for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values)
+                  for (final NemoMaterial material in NemoMaterial.values)
                     for (final NemoSurfaceTone tone in NemoSurfaceTone.values)
-                      for (final NemoSurfaceShape shape
-                          in NemoSurfaceShape.values)
+                      for (final NemoCornerRole cornerRole
+                          in NemoCornerRole.values)
                         _SurfaceCard(
                           width: cardWidth,
-                          depth: depth,
+                          material: material,
                           tone: tone,
-                          shape: shape,
+                          cornerRole: cornerRole,
                           theme: theme,
                           brandMark: brandMark,
                         ),
@@ -67,17 +69,17 @@ class SurfaceCatalogPage extends StatelessWidget {
 class _SurfaceCard extends StatelessWidget {
   const _SurfaceCard({
     required this.width,
-    required this.depth,
+    required this.material,
     required this.tone,
-    required this.shape,
+    required this.cornerRole,
     required this.theme,
     required this.brandMark,
   });
 
   final double width;
-  final NemoSurfaceDepth depth;
+  final NemoMaterial material;
   final NemoSurfaceTone tone;
-  final NemoSurfaceShape shape;
+  final NemoCornerRole cornerRole;
   final NemoThemeData theme;
   final Widget? brandMark;
 
@@ -88,11 +90,11 @@ class _SurfaceCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 180),
       child: NemoSurface(
         key: ValueKey<String>(
-          'surface-card-${depth.name}-${tone.name}-${shape.name}',
+          'surface-card-${material.name}-${tone.name}-${cornerRole.name}',
         ),
-        depth: depth,
+        material: material,
         tone: tone,
-        shape: shape,
+        cornerRole: cornerRole,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -103,11 +105,11 @@ class _SurfaceCard extends StatelessWidget {
                 child: asset,
               ),
             Text(
-              _titleFor(depth),
+              _titleFor(material),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             Text(
-              '${tone.name} · ${_shapeLabel(shape)}',
+              '${tone.name} · ${_cornerLabel(cornerRole)}',
               style: TextStyle(color: theme.semantic.mutedForeground),
             ),
           ],
@@ -116,17 +118,16 @@ class _SurfaceCard extends StatelessWidget {
     ),
   );
 
-  String _titleFor(NemoSurfaceDepth value) => switch (value) {
-    NemoSurfaceDepth.deeplySunken => 'Deeply sunken',
-    NemoSurfaceDepth.sunken => 'Sunken',
-    NemoSurfaceDepth.flat => 'Flat',
-    NemoSurfaceDepth.raised => 'Raised by default',
-    NemoSurfaceDepth.elevated => 'Elevated',
+  String _titleFor(NemoMaterial value) => switch (value) {
+    NemoMaterial.recessed => 'Recessed receiving area',
+    NemoMaterial.base => 'Base canvas',
+    NemoMaterial.raised => 'Raised action island',
+    NemoMaterial.floating => 'Floating transient plane',
   };
 
-  String _shapeLabel(NemoSurfaceShape value) => switch (value) {
-    NemoSurfaceShape.roundedSmall => 'rounded small',
-    NemoSurfaceShape.roundedMedium => 'rounded medium',
-    NemoSurfaceShape.roundedLarge => 'rounded large',
+  String _cornerLabel(NemoCornerRole value) => switch (value) {
+    NemoCornerRole.control => 'control corners',
+    NemoCornerRole.panel => 'panel corners',
+    NemoCornerRole.floating => 'floating corners',
   };
 }

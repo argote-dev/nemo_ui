@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../foundation/nemo_illumination.dart';
 import '../foundation/nemo_localizations.dart';
+import '../foundation/nemo_material.dart';
 import '../foundation/nemo_motion.dart';
 import '../foundation/nemo_theme.dart';
 import '../foundation/nemo_theme_data.dart';
@@ -143,13 +145,44 @@ class _NemoButtonState extends State<NemoButton> {
                       NemoButtonStateStyle style,
                       Widget? child,
                     ) {
-                      return CustomPaint(
-                        painter: _NemoButtonPainter(
-                          theme: theme,
-                          style: style,
-                          focused: _focused,
-                          enabled: enabled,
-                        ),
+                      final NemoInteractionRecipe targetRecipe = theme
+                          .interactions
+                          .recipeFor(switch (state) {
+                            NemoButtonState.resting =>
+                              NemoInteractionState.resting,
+                            NemoButtonState.hovered =>
+                              NemoInteractionState.hovered,
+                            NemoButtonState.pressed =>
+                              NemoInteractionState.pressed,
+                            NemoButtonState.focused =>
+                              NemoInteractionState.focused,
+                            NemoButtonState.disabled =>
+                              NemoInteractionState.disabled,
+                            NemoButtonState.loading =>
+                              NemoInteractionState.loading,
+                          });
+                      return TweenAnimationBuilder<NemoInteractionRecipe>(
+                        tween: _NemoInteractionRecipeTween(end: targetRecipe),
+                        duration: motion.quick,
+                        curve: motion.standardCurve,
+                        builder:
+                            (
+                              BuildContext context,
+                              NemoInteractionRecipe recipe,
+                              Widget? child,
+                            ) => CustomPaint(
+                              painter: _NemoButtonPainter(
+                                theme: theme,
+                                style: style,
+                                recipe: recipe,
+                                focused: _focused,
+                                enabled: enabled,
+                              ),
+                              child: Transform.translate(
+                                offset: Offset(0, recipe.contentOffset),
+                                child: child,
+                              ),
+                            ),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
                             minHeight: theme.components.controlMinHeight,
@@ -236,26 +269,30 @@ final class _NemoButtonStyleTween extends Tween<NemoButtonStateStyle> {
       NemoButtonStateStyle.lerp(begin!, end!, t);
 }
 
+final class _NemoInteractionRecipeTween extends Tween<NemoInteractionRecipe> {
+  _NemoInteractionRecipeTween({required NemoInteractionRecipe end})
+    : super(end: end);
+  @override
+  NemoInteractionRecipe lerp(double t) =>
+      NemoInteractionRecipe.lerp(begin!, end!, t);
+}
+
 class _NemoButtonPainter extends CustomPainter {
   const _NemoButtonPainter({
     required this.theme,
     required this.style,
+    required this.recipe,
     required this.focused,
     required this.enabled,
   });
-
   final NemoThemeData theme;
   final NemoButtonStateStyle style;
+  final NemoInteractionRecipe recipe;
   final bool focused;
   final bool enabled;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double radius = theme.foundation.radiusMedium;
-    final RRect shape = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(radius),
-    );
     Color base = enabled
         ? Color.lerp(
             theme.semantic.surface,
@@ -266,89 +303,27 @@ class _NemoButtonPainter extends CustomPainter {
     if (enabled) {
       base = Color.lerp(
         base,
-        theme.semantic.foreground,
-        style.foregroundBlend,
+        theme.semantic.primary,
+        style.accentOpacity + recipe.toneBlend,
       )!;
     }
-    if (enabled) {
-      base = Color.lerp(base, theme.semantic.primary, style.accentOpacity)!;
-    }
-    final double shadowOffset =
-        theme.foundation.shadowOffset * style.shadowOffsetMultiplier;
-    final double blur =
-        theme.foundation.shadowBlur * style.shadowBlurMultiplier;
-    final Offset diagonal = Offset(shadowOffset, shadowOffset);
-    if (enabled && style.shadowOpacity > 0) {
-      for (final (Offset offset, Color color) in <(Offset, Color)>[
-        (-diagonal, theme.semantic.highlightShadow),
-        (diagonal, theme.semantic.lowlightShadow),
-      ]) {
-        canvas.drawRRect(
-          shape.shift(offset),
-          Paint()
-            ..color = color.withValues(alpha: style.shadowOpacity)
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
-        );
-      }
-    }
-    canvas.drawRRect(shape, Paint()..color = base);
-    if (enabled && style.insetShadowOpacity > 0) {
-      _paintInnerShadow(
-        canvas,
-        shape,
-        -diagonal,
-        theme.semantic.lowlightShadow,
-        blur,
-      );
-      _paintInnerShadow(
-        canvas,
-        shape,
-        diagonal,
-        theme.semantic.highlightShadow,
-        blur,
-      );
-    }
-    canvas.drawRRect(
-      shape.deflate(theme.components.outlineWidth / 2),
-      Paint()
-        ..color = theme.semantic.outline.withValues(alpha: style.outlineOpacity)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = theme.components.outlineWidth,
+    NemoIllumination.paint(
+      canvas,
+      size,
+      theme: theme,
+      recipe: theme.materials.recipeFor(recipe.material),
+      baseColor: base,
+      radius: theme.foundation.radiusMedium,
+      focused: focused,
+      outlineOpacity: recipe.outlineOpacity,
     );
-    if (focused) {
-      canvas.drawRRect(
-        shape.inflate(theme.components.focusRingWidth / 2),
-        Paint()
-          ..color = theme.semantic.focusRing
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = theme.components.focusRingWidth,
-      );
-    }
-  }
-
-  void _paintInnerShadow(
-    Canvas canvas,
-    RRect shape,
-    Offset offset,
-    Color color,
-    double blur,
-  ) {
-    canvas.save();
-    canvas.clipRRect(shape);
-    final Path path = Path()..addRRect(shape.shift(offset));
-    canvas.drawShadow(
-      path,
-      color.withValues(alpha: color.a * style.insetShadowOpacity),
-      blur / 2,
-      false,
-    );
-    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant _NemoButtonPainter oldDelegate) =>
-      oldDelegate.theme != theme ||
-      oldDelegate.style != style ||
-      oldDelegate.focused != focused ||
-      oldDelegate.enabled != enabled;
+  bool shouldRepaint(covariant _NemoButtonPainter old) =>
+      old.theme != theme ||
+      old.style != style ||
+      old.recipe != recipe ||
+      old.focused != focused ||
+      old.enabled != enabled;
 }

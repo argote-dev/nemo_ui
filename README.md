@@ -72,14 +72,15 @@ customization.
 
 ## Surface
 
-`NemoSurface` is a non-interactive, token-driven primitive for visual grouping.
-It provides five local relief levels, semantic tones, tokenized shapes, and
-reduced-motion-aware transitions while leaving layout, semantics, focus, and
-gestures to composition:
+`NemoSurface` is a non-interactive semantic material primitive for visual
+grouping. It provides four materials—recessed, base, raised, and floating—and
+tokenized corner roles while leaving layout, semantics, focus, and gestures to
+composition:
 
 ```dart
 NemoSurface(
-  depth: NemoSurfaceDepth.raised,
+  material: NemoMaterial.raised,
+  cornerRole: NemoCornerRole.panel,
   child: const Text('Surface content'),
 )
 ```
@@ -180,3 +181,12 @@ can use the committed
 ## License
 
 Nemo UI is available under the [MIT License](LICENSE).
+
+## Theme Contract v2 (0.2.0)
+
+Nemo now composes four semantic materials—`recessed`, `base`, `raised`, and
+`floating`—from one fixed top-left illumination model. `NemoSurface` accepts
+`material` and `cornerRole`; the former five-depth API is deprecated as a
+pre-1.0 migration aid. See the [Theme Contract](doc/architecture/theme-contract-v2.md),
+[0.2.0 migration guide](doc/migration-0.2.0.md), and
+[conformance audit](doc/theme-contract-v2-audit.md), and [calibration rationale](doc/research/theme-v2-calibration.md).

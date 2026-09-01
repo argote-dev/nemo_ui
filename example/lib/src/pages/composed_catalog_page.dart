@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
+
+import '../nemo_page_shell.dart';
 
 /// A realistic preference workflow composed from Nemo foundation controls.
 class ComposedCatalogPage extends StatefulWidget {
@@ -13,23 +17,48 @@ class ComposedCatalogPage extends StatefulWidget {
 class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
   bool _dailyBrief = true;
   bool _isSaved = false;
+  Timer? _confirmationTimer;
+
+  @override
+  void dispose() {
+    _confirmationTimer?.cancel();
+    super.dispose();
+  }
+
+  void _save() {
+    _confirmationTimer?.cancel();
+    setState(() => _isSaved = true);
+    _confirmationTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() => _isSaved = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
-    return Scaffold(
+    return NemoPageShell(
       key: const ValueKey<String>('ComposedWorkspaceScreen'),
-      appBar: AppBar(title: const Text('Composed workspace')),
-      body: LayoutBuilder(
+      title: 'Composed workspace',
+      child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final bool wide = constraints.maxWidth >= 650;
-          final Widget summary = _Summary(theme: theme, saved: _isSaved);
-          final Widget preferences = _Preferences(
-            theme: theme,
-            dailyBrief: _dailyBrief,
-            onDailyBriefChanged: (bool value) =>
-                setState(() => _dailyBrief = value),
-            onSave: () => setState(() => _isSaved = true),
+          final Widget summary = NemoSurface(
+            key: const ValueKey<String>('composed-material-recessed'),
+            material: NemoMaterial.recessed,
+            child: _Summary(theme: theme, saved: _isSaved),
+          );
+          final Widget preferences = NemoSurface(
+            key: const ValueKey<String>('composed-material-raised'),
+            material: NemoMaterial.raised,
+            child: _Preferences(
+              theme: theme,
+              dailyBrief: _dailyBrief,
+              onDailyBriefChanged: (bool value) =>
+                  setState(() => _dailyBrief = value),
+              onSave: _save,
+            ),
           );
           return ListView(
             padding: EdgeInsets.all(theme.foundation.space24),
@@ -49,7 +78,7 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
               SizedBox(height: theme.foundation.space24),
               NemoSurface(
                 key: const ValueKey<String>('composed-workspace-canvas'),
-                depth: NemoSurfaceDepth.flat,
+                material: NemoMaterial.base,
                 tone: NemoSurfaceTone.surfaceVariant,
                 child: wide
                     ? Row(
@@ -69,6 +98,17 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
                         ],
                       ),
               ),
+              if (_isSaved) ...<Widget>[
+                SizedBox(height: theme.foundation.space16),
+                NemoSurface(
+                  key: const ValueKey<String>('composed-material-floating'),
+                  material: NemoMaterial.floating,
+                  cornerRole: NemoCornerRole.floating,
+                  child: const Text(
+                    'Preferences saved — transient confirmation.',
+                  ),
+                ),
+              ],
             ],
           );
         },

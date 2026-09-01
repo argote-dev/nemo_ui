@@ -48,3 +48,9 @@ timing.
 Interactive component playbooks cover every applicable state: resting,
 hovered, focused, pressed, disabled, loading, selected, and error. Each state
 defines visual, semantic, keyboard, localization, and reduced-motion behavior.
+
+## Theme Contract v2
+
+Physical press feedback moves a control from raised toward recessed while
+preserving focus and semantic state layers. With reduced motion, the component
+paints that final recipe immediately; no intermediate scale or bounce is used.

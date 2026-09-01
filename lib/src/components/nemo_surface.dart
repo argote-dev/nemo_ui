@@ -1,290 +1,156 @@
-import 'dart:ui' show lerpDouble;
-
 import 'package:flutter/material.dart';
 
+import '../foundation/nemo_illumination.dart';
+import '../foundation/nemo_material.dart';
 import '../foundation/nemo_motion.dart';
 import '../foundation/nemo_surface_contract.dart';
 import '../foundation/nemo_theme.dart';
 import '../foundation/nemo_theme_data.dart';
 
-export '../foundation/nemo_surface_contract.dart';
+export '../foundation/nemo_material.dart';
+export '../foundation/nemo_surface_contract.dart'
+    show NemoSurfaceDepth, NemoSurfaceTone, NemoSurfaceShape;
 
-/// A non-interactive, token-driven neumorphic visual surface.
+/// A non-interactive, token-driven Nemo material composition primitive.
 ///
-/// It deliberately adds no semantics, gestures, focus handling, or layout
-/// constraints. Compose those concerns around it or inside [child].
+/// Theme Contract v2 uses exactly four [material] values. [depth] is a
+/// deprecated v1 migration mapping; new code must use [material].
 class NemoSurface extends StatelessWidget {
   /// Creates a Nemo surface.
   const NemoSurface({
     required this.child,
-    this.depth = NemoSurfaceDepth.raised,
+    this.material,
+    @Deprecated('Use material: NemoMaterial instead.') this.depth,
     this.tone = NemoSurfaceTone.surface,
-    this.shape = NemoSurfaceShape.roundedMedium,
+    this.cornerRole = NemoCornerRole.panel,
+    @Deprecated('Use cornerRole instead.') this.shape,
     this.padding,
     this.clipBehavior = Clip.none,
     super.key,
   });
 
-  /// The content displayed on the surface.
+  /// Content displayed within the material.
   final Widget child;
 
-  /// The visual relief relative to the immediate visual background.
-  final NemoSurfaceDepth depth;
+  /// The semantic v2 material. `floating` is for transient/prominent planes.
+  final NemoMaterial? material;
 
-  /// The semantic base tone.
+  /// Deprecated v1 depth migration input; null uses [material] or raised.
+  final NemoSurfaceDepth? depth;
+
+  /// Semantic base tone for this material.
   final NemoSurfaceTone tone;
 
-  /// The tokenized corner shape.
-  final NemoSurfaceShape shape;
+  /// Tokenized corner role used unless legacy [shape] is supplied.
+  final NemoCornerRole cornerRole;
 
-  /// Internal content padding, or the theme's `space16` when null.
+  /// Deprecated v1 corner migration input.
+  final NemoSurfaceShape? shape;
+
+  /// Optional internal padding.
   final EdgeInsetsGeometry? padding;
 
-  /// Whether the child is clipped to the surface shape.
+  /// Clipping behavior for the content.
   final Clip clipBehavior;
+
+  NemoMaterial get _material =>
+      material ??
+      switch (depth ?? NemoSurfaceDepth.raised) {
+        NemoSurfaceDepth.deeplySunken ||
+        NemoSurfaceDepth.sunken => NemoMaterial.recessed,
+        NemoSurfaceDepth.flat => NemoMaterial.base,
+        NemoSurfaceDepth.raised => NemoMaterial.raised,
+        NemoSurfaceDepth.elevated => NemoMaterial.floating,
+      };
 
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
     final NemoMotionTokens motion = theme.motion.resolveFor(context);
-    final _SurfaceVisual visual = _SurfaceVisual.fromTheme(
-      theme: theme,
-      depth: depth,
-      tone: tone,
-      shape: shape,
+    final double radius = switch (shape) {
+      NemoSurfaceShape.roundedSmall => theme.foundation.radiusSmall,
+      NemoSurfaceShape.roundedMedium => theme.foundation.radiusMedium,
+      NemoSurfaceShape.roundedLarge => theme.foundation.radiusLarge,
+      null => switch (cornerRole) {
+        NemoCornerRole.control => theme.foundation.radiusSmall,
+        NemoCornerRole.panel => theme.foundation.radiusMedium,
+        NemoCornerRole.floating => theme.foundation.radiusLarge,
+      },
+    };
+    final Color base = tone == NemoSurfaceTone.surface
+        ? theme.semantic.surface
+        : theme.semantic.surfaceVariant;
+    final _SurfaceMaterialVisual target = _SurfaceMaterialVisual(
+      theme.materials.recipeFor(_material),
+      base,
+      radius,
     );
-    final _SurfaceVisual flatVisual = _SurfaceVisual.fromTheme(
-      theme: theme,
-      depth: NemoSurfaceDepth.flat,
-      tone: tone,
-      shape: shape,
+    final Widget paddedChild = Padding(
+      padding: padding ?? EdgeInsets.all(theme.foundation.space16),
+      child: child,
     );
-    final EdgeInsetsGeometry resolvedPadding =
-        padding ?? EdgeInsets.all(theme.foundation.space16);
-
-    return TweenAnimationBuilder<_SurfaceVisual>(
-      tween: _SurfaceVisualTween(end: visual, flat: flatVisual),
+    Widget render(_SurfaceMaterialVisual visual, Widget content) => CustomPaint(
+      painter: _NemoMaterialPainter(theme: theme, visual: visual),
+      child: clipBehavior == Clip.none
+          ? content
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(visual.radius),
+              clipBehavior: clipBehavior,
+              child: content,
+            ),
+    );
+    if (motion.standard == Duration.zero) {
+      return render(target, paddedChild);
+    }
+    return TweenAnimationBuilder<_SurfaceMaterialVisual>(
+      tween: _SurfaceMaterialVisualTween(end: target),
       duration: motion.standard,
       curve: motion.standardCurve,
-      child: Padding(padding: resolvedPadding, child: child),
-      builder:
-          (BuildContext context, _SurfaceVisual current, Widget? paddedChild) {
-            final Widget content = clipBehavior == Clip.none
-                ? paddedChild!
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(current.radius),
-                    clipBehavior: clipBehavior,
-                    child: paddedChild,
-                  );
-            return CustomPaint(
-              painter: _NemoSurfacePainter(visual: current),
-              child: content,
-            );
-          },
+      child: paddedChild,
+      builder: (context, visual, child) => render(visual, child!),
     );
   }
 }
 
 @immutable
-final class _SurfaceVisual {
-  const _SurfaceVisual({
-    required this.baseColor,
-    required this.overlayColor,
-    required this.outlineColor,
-    required this.highlightShadow,
-    required this.lowlightShadow,
-    required this.radius,
-    required this.outlineWidth,
-    required this.blur,
-    required this.offset,
-    required this.intensity,
-    required this.tonalOverlayOpacity,
-    required this.outlineOpacity,
-    required this.shadowOpacity,
-  });
-
-  factory _SurfaceVisual.fromTheme({
-    required NemoThemeData theme,
-    required NemoSurfaceDepth depth,
-    required NemoSurfaceTone tone,
-    required NemoSurfaceShape shape,
-  }) {
-    final NemoSurfaceDepthStyle style = theme.components.surface.styleFor(
-      depth,
-    );
-    final double radius = switch (shape) {
-      NemoSurfaceShape.roundedSmall => theme.foundation.radiusSmall,
-      NemoSurfaceShape.roundedMedium => theme.foundation.radiusMedium,
-      NemoSurfaceShape.roundedLarge => theme.foundation.radiusLarge,
-    };
-    return _SurfaceVisual(
-      baseColor: switch (tone) {
-        NemoSurfaceTone.surface => theme.semantic.surface,
-        NemoSurfaceTone.surfaceVariant => theme.semantic.surfaceVariant,
-      },
-      overlayColor: _overlayColor(theme.semantic, style.tonalColor),
-      outlineColor: theme.semantic.outline,
-      highlightShadow: theme.semantic.highlightShadow,
-      lowlightShadow: theme.semantic.lowlightShadow,
-      radius: radius,
-      outlineWidth: theme.components.outlineWidth,
-      blur: theme.foundation.shadowBlur * style.blurMultiplier,
-      offset: theme.foundation.shadowOffset * style.offsetMultiplier,
-      intensity: style.intensity,
-      tonalOverlayOpacity: style.tonalOverlayOpacity,
-      outlineOpacity: style.outlineOpacity,
-      shadowOpacity: style.shadowOpacity,
-    );
-  }
-
-  static Color _overlayColor(
-    NemoSemanticTokens semantic,
-    NemoSurfaceTonalColor tonalColor,
-  ) => switch (tonalColor) {
-    NemoSurfaceTonalColor.highlightShadow => semantic.highlightShadow,
-    NemoSurfaceTonalColor.lowlightShadow => semantic.lowlightShadow,
-    NemoSurfaceTonalColor.foreground => semantic.foreground,
-    NemoSurfaceTonalColor.outline => semantic.outline,
-    NemoSurfaceTonalColor.surfaceVariant => semantic.surfaceVariant,
-  };
-
-  final Color baseColor;
-  final Color overlayColor;
-  final Color outlineColor;
-  final Color highlightShadow;
-  final Color lowlightShadow;
+final class _SurfaceMaterialVisual {
+  const _SurfaceMaterialVisual(this.recipe, this.color, this.radius);
+  final NemoMaterialRecipe recipe;
+  final Color color;
   final double radius;
-  final double outlineWidth;
-  final double blur;
-  final double offset;
-  final double intensity;
-  final double tonalOverlayOpacity;
-  final double outlineOpacity;
-  final double shadowOpacity;
-
-  static _SurfaceVisual lerp(_SurfaceVisual a, _SurfaceVisual b, double t) {
-    return _SurfaceVisual(
-      baseColor: Color.lerp(a.baseColor, b.baseColor, t)!,
-      overlayColor: Color.lerp(a.overlayColor, b.overlayColor, t)!,
-      outlineColor: Color.lerp(a.outlineColor, b.outlineColor, t)!,
-      highlightShadow: Color.lerp(a.highlightShadow, b.highlightShadow, t)!,
-      lowlightShadow: Color.lerp(a.lowlightShadow, b.lowlightShadow, t)!,
-      radius: lerpDouble(a.radius, b.radius, t)!,
-      outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
-      blur: lerpDouble(a.blur, b.blur, t)!,
-      offset: lerpDouble(a.offset, b.offset, t)!,
-      intensity: lerpDouble(a.intensity, b.intensity, t)!,
-      tonalOverlayOpacity: lerpDouble(
-        a.tonalOverlayOpacity,
-        b.tonalOverlayOpacity,
-        t,
-      )!,
-      outlineOpacity: lerpDouble(a.outlineOpacity, b.outlineOpacity, t)!,
-      shadowOpacity: lerpDouble(a.shadowOpacity, b.shadowOpacity, t)!,
-    );
-  }
 }
 
-final class _SurfaceVisualTween extends Tween<_SurfaceVisual> {
-  _SurfaceVisualTween({required _SurfaceVisual end, required this.flat})
+final class _SurfaceMaterialVisualTween extends Tween<_SurfaceMaterialVisual> {
+  _SurfaceMaterialVisualTween({required _SurfaceMaterialVisual end})
     : super(end: end);
-
-  final _SurfaceVisual flat;
-
   @override
-  _SurfaceVisual lerp(double t) {
-    final _SurfaceVisual start = begin!;
-    if (start.intensity * end!.intensity < 0) {
-      return t <= 0.5
-          ? _SurfaceVisual.lerp(start, flat, t * 2)
-          : _SurfaceVisual.lerp(flat, end!, (t - 0.5) * 2);
-    }
-    return _SurfaceVisual.lerp(start, end!, t);
-  }
+  _SurfaceMaterialVisual lerp(double t) => _SurfaceMaterialVisual(
+    NemoMaterialRecipe.lerp(begin!.recipe, end!.recipe, t),
+    Color.lerp(begin!.color, end!.color, t)!,
+    begin!.radius + (end!.radius - begin!.radius) * t,
+  );
 }
 
-final class _NemoSurfacePainter extends CustomPainter {
-  const _NemoSurfacePainter({required this.visual});
-
-  final _SurfaceVisual visual;
+final class _NemoMaterialPainter extends CustomPainter {
+  const _NemoMaterialPainter({required this.theme, required this.visual});
+  final NemoThemeData theme;
+  final _SurfaceMaterialVisual visual;
+  @override
+  void paint(Canvas canvas, Size size) => NemoIllumination.paint(
+    canvas,
+    size,
+    theme: theme,
+    recipe: visual.recipe,
+    baseColor: visual.color,
+    radius: visual.radius,
+  );
+  @override
+  bool? hitTest(Offset position) => false;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final RRect shape = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(visual.radius),
-    );
-    final double blur = visual.blur;
-    final Offset diagonal = Offset(visual.offset, visual.offset);
-
-    if (visual.intensity > 0 && visual.shadowOpacity > 0) {
-      _paintOuterShadow(canvas, shape, -diagonal, visual.highlightShadow, blur);
-      _paintOuterShadow(canvas, shape, diagonal, visual.lowlightShadow, blur);
-    }
-
-    canvas.drawRRect(shape, Paint()..color = visual.baseColor);
-    if (visual.tonalOverlayOpacity > 0) {
-      canvas.drawRRect(
-        shape,
-        Paint()
-          ..color = visual.overlayColor.withValues(
-            alpha: visual.tonalOverlayOpacity,
-          ),
-      );
-    }
-
-    if (visual.intensity < 0 && visual.shadowOpacity > 0) {
-      _paintInnerShadow(canvas, shape, -diagonal, visual.lowlightShadow, blur);
-      _paintInnerShadow(canvas, shape, diagonal, visual.highlightShadow, blur);
-    }
-
-    canvas.drawRRect(
-      shape.deflate(visual.outlineWidth / 2),
-      Paint()
-        ..color = visual.outlineColor.withValues(alpha: visual.outlineOpacity)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = visual.outlineWidth,
-    );
-  }
-
-  void _paintOuterShadow(
-    Canvas canvas,
-    RRect shape,
-    Offset offset,
-    Color color,
-    double blur,
-  ) {
-    canvas.drawRRect(
-      shape.shift(offset),
-      Paint()
-        ..color = color.withValues(alpha: color.a * visual.shadowOpacity)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
-    );
-  }
-
-  void _paintInnerShadow(
-    Canvas canvas,
-    RRect shape,
-    Offset offset,
-    Color color,
-    double blur,
-  ) {
-    canvas.save();
-    canvas.clipRRect(shape);
-    final Path path = Path()..addRRect(shape.shift(offset));
-    // drawShadow paints outside the shifted path. Clipping it to the original
-    // surface retains that edge inside the surface, instead of tinting its
-    // centre as a blurred filled shape would.
-    canvas.drawShadow(
-      path,
-      color.withValues(alpha: color.a * visual.shadowOpacity),
-      blur / 2,
-      false,
-    );
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _NemoSurfacePainter oldDelegate) =>
-      oldDelegate.visual != visual;
+  bool shouldRepaint(covariant _NemoMaterialPainter old) =>
+      old.theme != theme ||
+      old.visual.recipe != visual.recipe ||
+      old.visual.color != visual.color ||
+      old.visual.radius != visual.radius;
 }

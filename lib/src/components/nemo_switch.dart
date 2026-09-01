@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../foundation/nemo_illumination.dart';
 import '../foundation/nemo_localizations.dart';
+import '../foundation/nemo_material.dart';
 import '../foundation/nemo_theme.dart';
 import '../foundation/nemo_theme_data.dart';
 
@@ -170,6 +172,19 @@ class _NemoSwitchState extends State<NemoSwitch> {
                                 painter: _NemoSwitchTrackPainter(
                                   theme: theme,
                                   style: style,
+                                  recipe: theme.interactions.recipeFor(
+                                    !_enabled
+                                        ? NemoInteractionState.disabled
+                                        : _pressed
+                                        ? NemoInteractionState.pressed
+                                        : widget.value
+                                        ? NemoInteractionState.selected
+                                        : _focused
+                                        ? NemoInteractionState.focused
+                                        : _hovered
+                                        ? NemoInteractionState.hovered
+                                        : NemoInteractionState.resting,
+                                  ),
                                   color: track,
                                   focused: _focused,
                                   enabled: enabled,
@@ -189,6 +204,11 @@ class _NemoSwitchState extends State<NemoSwitch> {
                                         painter: _NemoSwitchThumbPainter(
                                           theme: theme,
                                           style: style,
+                                          recipe: theme.interactions.recipeFor(
+                                            _pressed
+                                                ? NemoInteractionState.pressed
+                                                : NemoInteractionState.resting,
+                                          ),
                                           color: thumb,
                                           enabled: enabled,
                                         ),
@@ -241,119 +261,66 @@ class _NemoSwitchTrackPainter extends CustomPainter {
   const _NemoSwitchTrackPainter({
     required this.theme,
     required this.style,
+    required this.recipe,
     required this.color,
     required this.focused,
     required this.enabled,
   });
-
   final NemoThemeData theme;
   final NemoSwitchStateStyle style;
+  final NemoInteractionRecipe recipe;
   final Color color;
   final bool focused;
   final bool enabled;
-
   @override
-  void paint(Canvas canvas, Size size) {
-    final RRect shape = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(size.height / 2),
-    );
-    canvas.drawRRect(shape, Paint()..color = color);
-    if (enabled && style.trackShadowOpacity > 0) {
-      final Offset diagonal = Offset(
-        theme.foundation.shadowOffset * style.trackShadowOffsetMultiplier,
-        theme.foundation.shadowOffset * style.trackShadowOffsetMultiplier,
-      );
-      final double blur =
-          theme.foundation.shadowBlur * style.trackShadowBlurMultiplier;
-      canvas.save();
-      canvas.clipRRect(shape);
-      for (final (Offset offset, Color shadow) in <(Offset, Color)>[
-        (-diagonal, theme.semantic.lowlightShadow),
-        (diagonal, theme.semantic.highlightShadow),
-      ]) {
-        canvas.drawRRect(
-          shape.shift(offset),
-          Paint()
-            ..color = shadow.withValues(alpha: style.trackShadowOpacity)
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
-        );
-      }
-      canvas.restore();
-    }
-    final bool hasFocus = focused;
-    final double outlineWidth = hasFocus
-        ? theme.components.focusRingWidth
-        : theme.components.outlineWidth;
-    canvas.drawRRect(
-      shape.deflate(outlineWidth / 2),
-      Paint()
-        ..color = hasFocus
-            ? theme.semantic.focusRing
-            : theme.semantic.outline.withValues(
-                alpha: theme.components.switchControl.trackOutlineOpacity,
-              )
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = outlineWidth,
-    );
-  }
-
+  void paint(Canvas canvas, Size size) => NemoIllumination.paint(
+    canvas,
+    size,
+    theme: theme,
+    recipe: theme.materials.recipeFor(recipe.material),
+    baseColor: color,
+    radius: size.height / 2,
+    focused: focused,
+  );
   @override
-  bool shouldRepaint(covariant _NemoSwitchTrackPainter oldDelegate) =>
-      theme != oldDelegate.theme ||
-      style != oldDelegate.style ||
-      color != oldDelegate.color ||
-      focused != oldDelegate.focused ||
-      enabled != oldDelegate.enabled;
+  bool shouldRepaint(covariant _NemoSwitchTrackPainter old) =>
+      theme != old.theme ||
+      style != old.style ||
+      recipe != old.recipe ||
+      color != old.color ||
+      focused != old.focused ||
+      enabled != old.enabled;
 }
 
 class _NemoSwitchThumbPainter extends CustomPainter {
   const _NemoSwitchThumbPainter({
     required this.theme,
     required this.style,
+    required this.recipe,
     required this.color,
     required this.enabled,
   });
-
   final NemoThemeData theme;
   final NemoSwitchStateStyle style;
+  final NemoInteractionRecipe recipe;
   final Color color;
   final bool enabled;
-
   @override
-  void paint(Canvas canvas, Size size) {
-    final RRect shape = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(size.shortestSide / 2),
-    );
-    if (enabled && style.thumbShadowOpacity > 0) {
-      final Offset diagonal = Offset(
-        theme.foundation.shadowOffset * style.thumbShadowOffsetMultiplier,
-        theme.foundation.shadowOffset * style.thumbShadowOffsetMultiplier,
-      );
-      final double blur =
-          theme.foundation.shadowBlur * style.thumbShadowBlurMultiplier;
-      for (final (Offset offset, Color shadow) in <(Offset, Color)>[
-        (-diagonal, theme.semantic.highlightShadow),
-        (diagonal, theme.semantic.lowlightShadow),
-      ]) {
-        canvas.drawRRect(
-          shape.shift(offset),
-          Paint()
-            ..color = shadow.withValues(alpha: style.thumbShadowOpacity)
-            ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
-        );
-      }
-    }
-    canvas.drawRRect(shape, Paint()..color = color);
-  }
-
+  void paint(Canvas canvas, Size size) => NemoIllumination.paint(
+    canvas,
+    size,
+    theme: theme,
+    recipe: theme.materials.recipeFor(recipe.material),
+    baseColor: color,
+    radius: size.shortestSide / 2,
+  );
   @override
-  bool shouldRepaint(covariant _NemoSwitchThumbPainter oldDelegate) =>
-      theme != oldDelegate.theme ||
-      style != oldDelegate.style ||
-      color != oldDelegate.color ||
-      enabled != oldDelegate.enabled;
+  bool shouldRepaint(covariant _NemoSwitchThumbPainter old) =>
+      theme != old.theme ||
+      style != old.style ||
+      recipe != old.recipe ||
+      color != old.color ||
+      enabled != old.enabled;
 }
 
 class _NemoSwitchIndicatorPainter extends CustomPainter {

@@ -1,5 +1,7 @@
 # Tactile visual language
 
+> **Historical v1 reference.** Theme Contract v2 in [theme-contract-v2.md](theme-contract-v2.md) is normative. The former five-depth tokens are removed; use its four semantic materials and shared renderer.
+
 This contract defines the visual output of Nemo-owned surfaces and controls.
 It makes the canvas, relief, and interactive feedback read as one continuous
 material. Material may provide infrastructure, but it must not define the
@@ -26,8 +28,7 @@ direction; they change the semantic colors and opacity, not the geometry.
 
 Depth is relative to the immediately surrounding material. A nested component
 must select a depth deliberately; it does not inherit an absolute elevation.
-Use `components.surface` and the foundation shadow metrics, rather than
-hard-coded color, blur, or offset values.
+Use `NemoThemeData.materials` and the shared illumination renderer; components must not hard-code color, blur, or offset values.
 
 | Depth | Intended reading | Token mapping | Light treatment | Dark treatment |
 | --- | --- | --- | --- | --- |
