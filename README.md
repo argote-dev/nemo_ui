@@ -4,10 +4,10 @@ Nemo UI is an accessible, modern neumorphic design system for Flutter. It uses
 soft depth as a tactile cue while preserving explicit contrast, focus,
 semantics, and reduced-motion behavior.
 
-The current `0.0.1` release is the foundation bootstrap. It provides design
-tokens, dynamic themes, scoped asset resolution, localization, semantic motion,
-native previews, and an example catalog. `NemoSurface`, `NemoButton`, and
-`NemoSwitch` are available.
+Version `0.1.0` is the first usable release. It provides design tokens, dynamic
+themes, scoped asset resolution, localization, semantic motion, native
+previews, and an example catalog, together with `NemoSurface`, `NemoButton`,
+and `NemoSwitch`.
 
 ## Requirements
 
@@ -29,13 +29,11 @@ but desktop is not part of the initial compatibility matrix.
 
 ## Installation
 
-Until the first pub.dev release, depend on the Git repository:
+Add the package from pub.dev:
 
 ```yaml
 dependencies:
-  nemo_ui:
-    git:
-      url: git@github.com:argote-dev/nemo_ui.git
+  nemo_ui: ^0.1.0
 ```
 
 Then import the single curated entry point:
