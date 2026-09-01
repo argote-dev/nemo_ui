@@ -121,6 +121,35 @@ NemoSwitch(
 See the [NemoSwitch playbook](doc/components/nemo-switch.md) for its API,
 accessibility contract, and token customization.
 
+## Top bar
+
+`NemoTopBar` is the persistent, edge-to-edge structural canvas for a page. It
+owns the safe-area treatment and a local status-bar overlay style; applications
+keep navigation, actions, and their semantics under caller control:
+
+```dart
+Scaffold(
+  appBar: NemoTopBar(
+    leading: const AccountBackAction(),
+    title: const Text('Settings'),
+    actions: const <Widget>[HelpAction()],
+  ),
+  body: const SettingsPage(),
+)
+```
+
+`AccountBackAction` and `HelpAction` are application-owned placeholders: choose
+icons from the host's curated iconography and keep their semantics and actions
+with the caller.
+
+When `leading` is absent, `NemoTopBar` follows Flutter's dismissible-route
+convention and supplies a start-edge back control by default. Set
+`automaticallyImplyLeading: false` to suppress it. Hosts that require curated
+iconography should pass `leading` explicitly.
+
+See the [NemoTopBar playbook](doc/components/nemo-top-bar.md) for edge-to-edge,
+safe-area, accessibility, and token details.
+
 ## Provide dynamic assets
 
 Nemo UI uses semantic asset slots instead of component-owned paths. Inject a

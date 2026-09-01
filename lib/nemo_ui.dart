@@ -4,6 +4,7 @@ library;
 export 'src/components/nemo_button.dart';
 export 'src/components/nemo_surface.dart';
 export 'src/components/nemo_switch.dart';
+export 'src/components/nemo_top_bar.dart';
 export 'src/foundation/nemo_asset_resolver.dart';
 export 'src/foundation/nemo_localizations.dart';
 export 'src/foundation/nemo_material.dart';
