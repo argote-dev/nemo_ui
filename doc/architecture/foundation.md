@@ -44,6 +44,13 @@ Components must not depend directly on arbitrary palette values or hard-coded
 durations. Theme factories may derive a complete light, dark, or high-contrast
 theme from a seed color; every derived token remains replaceable.
 
+## Tactile visual contract
+
+The [tactile visual language](tactile-visual-language.md) defines the shared
+lighting, depth, outline, composition, accent, and accessibility contract for
+Nemo-owned surfaces and controls. It preserves host-owned typography while
+keeping Material as infrastructure rather than Nemo's visual identity.
+
 ## Asset boundary
 
 Flutter assets remain compile-time declarations. Components ask for semantic
