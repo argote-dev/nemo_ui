@@ -46,11 +46,20 @@ Surface has no hover, pressed, disabled, selected, or focused state.
 ## Tokens
 
 Surface consumes `NemoComponentTokens.surface`, which provides explicit styles
-for all five depths. Each style independently controls blur, offset, tonal
-contrast, outline, and shadow opacity, in addition to the foundation
-spacing/radii/shadow metrics and semantic surface, outline, highlight, and
-lowlight colors. A custom `NemoComponentTokens`
-must supply `NemoSurfaceTokens`.
+for all five depths. Standard treatments are ordered in both light and dark
+modes: `deeplySunken` has the strongest lowlight overlay and inset occlusion;
+`sunken` is a quieter inset; `flat` is nearly unmodified with a soft local
+boundary; `raised` adds a restrained highlight and paired outer shadows; and
+`elevated` has the strongest raised overlay, blur, offset, and shadow. The
+light direction and geometry remain top-left / bottom-right in both themes;
+dark mode changes semantic colors, not that geometry. Standard `sunken` and
+`raised` outlines are deliberately restrained so relief, rather than a card
+border, carries their reading.
+
+Each style independently controls blur, offset, tonal contrast, outline, and
+shadow opacity, in addition to the foundation spacing/radii/shadow metrics and
+semantic surface, outline, highlight, and lowlight colors. A custom
+`NemoComponentTokens` must supply `NemoSurfaceTokens`.
 
 ## Content and localization
 
@@ -89,11 +98,14 @@ Widget Previewer scenario **Components / Surface depths** in
 ## Test matrix
 
 Widget tests cover defaults, clipping, theme absence, semantics/hit-test
-transparency, reduced motion, and high-contrast depth collapse. The
-deterministic Surface golden covers every depth, tone, and shape across light,
-dark, and high-contrast foundations. It uses the shared pinned golden harness;
-intentional baseline changes require tracked image review and before-and-after
-pull-request evidence.
+transparency, reduced motion, light/dark token ordering, post-overlay text
+contrast, and shadow-free high-contrast boundaries. The deterministic Surface
+golden composes a flat local plane with deeply sunken, sunken, raised, and
+elevated children in light, dark, and high-contrast content-bearing scenes:
+a persistent well, receiving field, grouped panel, and prominent action area.
+Standard scenes retain their paired shadows; high contrast intentionally does
+not. It uses the shared pinned golden harness; intentional baseline changes
+require tracked image review and before-and-after pull-request evidence.
 
 ## Decisions and known constraints
 

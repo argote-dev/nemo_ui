@@ -5,79 +5,167 @@ import 'package:nemo_ui/nemo_ui.dart';
 import '../support/golden_test_harness.dart';
 
 void main() {
-  testWidgets(
-    'renders every surface depth, tone, and shape in every foundation theme',
-    (WidgetTester tester) async {
-      configureGoldenTest(tester, physicalSize: const Size(720, 900));
+  testWidgets('renders composed light, dark, and high-contrast depth scenes', (
+    WidgetTester tester,
+  ) async {
+    configureGoldenTest(tester, physicalSize: const Size(720, 900));
 
-      await tester.pumpWidget(
-        goldenTestApp(scaffold: false, child: _SurfaceGoldenCatalog()),
-      );
+    await tester.pumpWidget(
+      goldenTestApp(scaffold: false, child: const _SurfaceDepthScenes()),
+    );
 
-      expect(find.byType(NemoSurface), findsNWidgets(90));
-      await expectLater(
-        find.byType(MaterialApp),
-        matchesGoldenFile('goldens/nemo_surface.png'),
-      );
-    },
-  );
+    expect(find.byType(NemoSurface), findsNWidgets(15));
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/nemo_surface.png'),
+    );
+  });
 }
 
-class _SurfaceGoldenCatalog extends StatelessWidget {
+class _SurfaceDepthScenes extends StatelessWidget {
+  const _SurfaceDepthScenes();
+
   @override
   Widget build(BuildContext context) => Column(
     children: <Widget>[
-      _themeCatalog(NemoThemeData.light()),
-      const SizedBox(height: 12),
-      _themeCatalog(NemoThemeData.dark()),
-      const SizedBox(height: 12),
-      _themeCatalog(NemoThemeData.highContrast()),
+      _DepthScene(theme: NemoThemeData.light()),
+      _DepthScene(theme: NemoThemeData.dark()),
+      _DepthScene(theme: NemoThemeData.highContrast()),
     ],
   );
+}
 
-  Widget _themeCatalog(NemoThemeData theme) {
-    final NemoSurfaceTokens surfaceTokens = theme.components.surface;
-    final NemoThemeData stableTheme = theme.copyWith(
-      components: theme.components.copyWith(
-        // Blurred shadows rasterize differently across Skia hosts. The golden
-        // retains the real tone, outline, depth category, and shape contract.
-        surface: surfaceTokens.copyWith(
-          deeplySunken: surfaceTokens.deeplySunken.copyWith(shadowOpacity: 0),
-          sunken: surfaceTokens.sunken.copyWith(shadowOpacity: 0),
-          flat: surfaceTokens.flat.copyWith(shadowOpacity: 0),
-          raised: surfaceTokens.raised.copyWith(shadowOpacity: 0),
-          elevated: surfaceTokens.elevated.copyWith(shadowOpacity: 0),
-        ),
-      ),
-    );
-    return Theme(
-      data: goldenThemeData(stableTheme),
-      child: ColoredBox(
-        color: stableTheme.semantic.surface,
+class _DepthScene extends StatelessWidget {
+  const _DepthScene({required this.theme});
+
+  final NemoThemeData theme;
+
+  @override
+  Widget build(BuildContext context) => Theme(
+    data: goldenThemeData(theme),
+    child: ColoredBox(
+      color: theme.semantic.surface,
+      child: SizedBox(
+        height: 300,
+        width: double.infinity,
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: <Widget>[
-              for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values)
-                for (final NemoSurfaceTone tone in NemoSurfaceTone.values)
-                  for (final NemoSurfaceShape shape in NemoSurfaceShape.values)
-                    SizedBox(
-                      width: 104,
-                      height: 48,
-                      child: NemoSurface(
-                        depth: depth,
-                        tone: tone,
-                        shape: shape,
-                        padding: EdgeInsets.zero,
-                        child: const SizedBox.expand(),
-                      ),
-                    ),
-            ],
+          padding: const EdgeInsets.all(32),
+          child: NemoSurface(
+            depth: NemoSurfaceDepth.flat,
+            shape: NemoSurfaceShape.roundedLarge,
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: <Widget>[
+                _DepthTile(
+                  depth: NemoSurfaceDepth.deeplySunken,
+                  child: const _WellContent(),
+                ),
+                const SizedBox(width: 16),
+                _DepthTile(
+                  depth: NemoSurfaceDepth.sunken,
+                  child: const _FieldContent(),
+                ),
+                const SizedBox(width: 16),
+                _DepthTile(
+                  depth: NemoSurfaceDepth.raised,
+                  child: const _PanelContent(),
+                ),
+                const SizedBox(width: 16),
+                _DepthTile(
+                  depth: NemoSurfaceDepth.elevated,
+                  child: const _ActionContent(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+class _DepthTile extends StatelessWidget {
+  const _DepthTile({required this.depth, required this.child});
+
+  final NemoSurfaceDepth depth;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: NemoSurface(
+      depth: depth,
+      shape: NemoSurfaceShape.roundedMedium,
+      padding: const EdgeInsets.all(12),
+      child: child,
+    ),
+  );
+}
+
+class _WellContent extends StatelessWidget {
+  const _WellContent();
+
+  @override
+  Widget build(BuildContext context) => const Align(
+    alignment: Alignment.bottomCenter,
+    child: _ContentBlock(height: 56),
+  );
+}
+
+class _FieldContent extends StatelessWidget {
+  const _FieldContent();
+
+  @override
+  Widget build(BuildContext context) => const Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: <Widget>[
+      _ContentBlock(height: 12),
+      SizedBox(height: 8),
+      _ContentBlock(height: 28),
+    ],
+  );
+}
+
+class _PanelContent extends StatelessWidget {
+  const _PanelContent();
+
+  @override
+  Widget build(BuildContext context) => const Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: <Widget>[
+      _ContentBlock(widthFactor: 0.42, height: 12),
+      SizedBox(height: 10),
+      _ContentBlock(height: 20),
+    ],
+  );
+}
+
+class _ActionContent extends StatelessWidget {
+  const _ActionContent();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: _ContentBlock(widthFactor: 0.58, height: 48));
+}
+
+class _ContentBlock extends StatelessWidget {
+  const _ContentBlock({required this.height, this.widthFactor = 1});
+
+  final double widthFactor;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => FractionallySizedBox(
+    widthFactor: widthFactor,
+    child: SizedBox(
+      height: height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: NemoTheme.of(context).semantic.mutedForeground
+              .withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+    ),
+  );
 }
