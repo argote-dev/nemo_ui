@@ -7,6 +7,16 @@
 
 ## Unreleased
 
+### Added
+
+- Add `NemoTopBar`, an edge-to-edge, route-aware page top bar with safe-area,
+  system-overlay, RTL, semantics, and high-contrast support.
+
+### Changed
+
+- **Breaking:** `NemoComponentTokens` now requires a `topBar` value of type
+  `NemoTopBarTokens` when constructed directly.
+
 ## 0.1.0 - 2026-08-30
 
 ### Added

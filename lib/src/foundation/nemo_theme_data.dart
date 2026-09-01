@@ -412,6 +412,7 @@ final class NemoComponentTokens {
     required this.outlineWidth,
     required this.button,
     required this.switchControl,
+    required this.topBar,
   });
 
   /// The minimum interactive control height.
@@ -432,6 +433,9 @@ final class NemoComponentTokens {
   /// Visual contract for [NemoSwitch].
   final NemoSwitchTokens switchControl;
 
+  /// Visual layout contract for [NemoTopBar].
+  final NemoTopBarTokens topBar;
+
   /// The standard component contract.
   static const NemoComponentTokens standard = NemoComponentTokens(
     controlMinHeight: 48,
@@ -440,6 +444,7 @@ final class NemoComponentTokens {
     outlineWidth: 1,
     button: NemoButtonTokens.standard,
     switchControl: NemoSwitchTokens.standard,
+    topBar: NemoTopBarTokens.standard,
   );
 
   /// The high-contrast component contract.
@@ -450,6 +455,7 @@ final class NemoComponentTokens {
     outlineWidth: 2,
     button: NemoButtonTokens.highContrast,
     switchControl: NemoSwitchTokens.highContrast,
+    topBar: NemoTopBarTokens.highContrast,
   );
 
   /// Creates a copy with selectively replaced component values.
@@ -460,6 +466,7 @@ final class NemoComponentTokens {
     double? outlineWidth,
     NemoButtonTokens? button,
     NemoSwitchTokens? switchControl,
+    NemoTopBarTokens? topBar,
   }) {
     return NemoComponentTokens(
       controlMinHeight: controlMinHeight ?? this.controlMinHeight,
@@ -469,6 +476,7 @@ final class NemoComponentTokens {
       outlineWidth: outlineWidth ?? this.outlineWidth,
       button: button ?? this.button,
       switchControl: switchControl ?? this.switchControl,
+      topBar: topBar ?? this.topBar,
     );
   }
 
@@ -489,8 +497,79 @@ final class NemoComponentTokens {
       outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
       button: NemoButtonTokens.lerp(a.button, b.button, t),
       switchControl: NemoSwitchTokens.lerp(a.switchControl, b.switchControl, t),
+      topBar: NemoTopBarTokens.lerp(a.topBar, b.topBar, t),
     );
   }
+}
+
+/// Tokenized visual geometry for the persistent [NemoTopBar].
+///
+/// The top bar height is deliberately not configurable: it is a stable 64
+/// logical-pixel widget contract, excluding system insets.
+@immutable
+final class NemoTopBarTokens {
+  /// Creates the visual geometry for a top bar.
+  const NemoTopBarTokens({
+    required this.horizontalPadding,
+    required this.titleSpacing,
+    required this.boundaryOpacity,
+  });
+
+  /// Directional content inset inside the system-safe area.
+  final double horizontalPadding;
+
+  /// Gap between the navigation slot and the title.
+  final double titleSpacing;
+
+  /// Opacity of the explicit lower boundary over semantic outline.
+  final double boundaryOpacity;
+
+  /// Default top-bar geometry.
+  static const NemoTopBarTokens standard = NemoTopBarTokens(
+    horizontalPadding: 16,
+    titleSpacing: 12,
+    boundaryOpacity: .5,
+  );
+
+  /// High-contrast geometry retains a fully visible lower boundary.
+  static const NemoTopBarTokens highContrast = NemoTopBarTokens(
+    horizontalPadding: 16,
+    titleSpacing: 12,
+    boundaryOpacity: 1,
+  );
+
+  /// Creates a copy with selectively replaced values.
+  NemoTopBarTokens copyWith({
+    double? horizontalPadding,
+    double? titleSpacing,
+    double? boundaryOpacity,
+  }) => NemoTopBarTokens(
+    horizontalPadding: horizontalPadding ?? this.horizontalPadding,
+    titleSpacing: titleSpacing ?? this.titleSpacing,
+    boundaryOpacity: boundaryOpacity ?? this.boundaryOpacity,
+  );
+
+  /// Interpolates top-bar tokens.
+  static NemoTopBarTokens lerp(
+    NemoTopBarTokens a,
+    NemoTopBarTokens b,
+    double t,
+  ) => NemoTopBarTokens(
+    horizontalPadding: lerpDouble(a.horizontalPadding, b.horizontalPadding, t)!,
+    titleSpacing: lerpDouble(a.titleSpacing, b.titleSpacing, t)!,
+    boundaryOpacity: lerpDouble(a.boundaryOpacity, b.boundaryOpacity, t)!,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is NemoTopBarTokens &&
+      horizontalPadding == other.horizontalPadding &&
+      titleSpacing == other.titleSpacing &&
+      boundaryOpacity == other.boundaryOpacity;
+
+  @override
+  int get hashCode =>
+      Object.hash(horizontalPadding, titleSpacing, boundaryOpacity);
 }
 
 /// Visual values for the controlled [NemoSwitch] component.
