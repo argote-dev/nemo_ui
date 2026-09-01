@@ -98,6 +98,9 @@ class _NemoButtonState extends State<NemoButton> {
     final String? label = widget.isLoading
         ? NemoLocalizations.of(context).loading
         : widget.semanticLabel;
+    final Color contentColor = widget.isLoading || enabled
+        ? theme.semantic.primary
+        : theme.semantic.mutedForeground;
 
     return MergeSemantics(
       child: Semantics(
@@ -159,17 +162,9 @@ class _NemoButtonState extends State<NemoButton> {
                             ),
                             child: Center(
                               child: IconTheme(
-                                data: IconThemeData(
-                                  color: enabled
-                                      ? theme.semantic.onPrimary
-                                      : theme.semantic.mutedForeground,
-                                ),
+                                data: IconThemeData(color: contentColor),
                                 child: DefaultTextStyle.merge(
-                                  style: TextStyle(
-                                    color: enabled
-                                        ? theme.semantic.onPrimary
-                                        : theme.semantic.mutedForeground,
-                                  ),
+                                  style: TextStyle(color: contentColor),
                                   child: widget.isLoading
                                       ? ExcludeSemantics(
                                           child: Row(
@@ -194,18 +189,14 @@ class _NemoButtonState extends State<NemoButton> {
                                                             .components
                                                             .button
                                                             .progressIndicatorSize,
-                                                        color: theme
-                                                            .semantic
-                                                            .onPrimary,
+                                                        color: contentColor,
                                                       )
                                                     : CircularProgressIndicator(
                                                         strokeWidth: theme
                                                             .components
                                                             .button
                                                             .progressIndicatorStrokeWidth,
-                                                        color: theme
-                                                            .semantic
-                                                            .onPrimary,
+                                                        color: contentColor,
                                                       ),
                                               ),
                                               SizedBox(
@@ -265,19 +256,29 @@ class _NemoButtonPainter extends CustomPainter {
       Offset.zero & size,
       Radius.circular(radius),
     );
-    final Color base = enabled
+    Color base = enabled
         ? Color.lerp(
-            theme.semantic.primary,
-            theme.semantic.foreground,
-            style.foregroundBlend,
+            theme.semantic.surface,
+            theme.semantic.surfaceVariant,
+            style.surfaceVariantBlend,
           )!
         : theme.semantic.surfaceVariant;
+    if (enabled) {
+      base = Color.lerp(
+        base,
+        theme.semantic.foreground,
+        style.foregroundBlend,
+      )!;
+    }
+    if (enabled) {
+      base = Color.lerp(base, theme.semantic.primary, style.accentOpacity)!;
+    }
     final double shadowOffset =
         theme.foundation.shadowOffset * style.shadowOffsetMultiplier;
     final double blur =
         theme.foundation.shadowBlur * style.shadowBlurMultiplier;
+    final Offset diagonal = Offset(shadowOffset, shadowOffset);
     if (enabled && style.shadowOpacity > 0) {
-      final Offset diagonal = Offset(shadowOffset, shadowOffset);
       for (final (Offset offset, Color color) in <(Offset, Color)>[
         (-diagonal, theme.semantic.highlightShadow),
         (diagonal, theme.semantic.lowlightShadow),
@@ -291,6 +292,22 @@ class _NemoButtonPainter extends CustomPainter {
       }
     }
     canvas.drawRRect(shape, Paint()..color = base);
+    if (enabled && style.insetShadowOpacity > 0) {
+      _paintInnerShadow(
+        canvas,
+        shape,
+        -diagonal,
+        theme.semantic.lowlightShadow,
+        blur,
+      );
+      _paintInnerShadow(
+        canvas,
+        shape,
+        diagonal,
+        theme.semantic.highlightShadow,
+        blur,
+      );
+    }
     canvas.drawRRect(
       shape.deflate(theme.components.outlineWidth / 2),
       Paint()
@@ -300,13 +317,32 @@ class _NemoButtonPainter extends CustomPainter {
     );
     if (focused) {
       canvas.drawRRect(
-        shape.deflate(theme.components.focusRingWidth / 2),
+        shape.inflate(theme.components.focusRingWidth / 2),
         Paint()
           ..color = theme.semantic.focusRing
           ..style = PaintingStyle.stroke
           ..strokeWidth = theme.components.focusRingWidth,
       );
     }
+  }
+
+  void _paintInnerShadow(
+    Canvas canvas,
+    RRect shape,
+    Offset offset,
+    Color color,
+    double blur,
+  ) {
+    canvas.save();
+    canvas.clipRRect(shape);
+    final Path path = Path()..addRRect(shape.shift(offset));
+    canvas.drawShadow(
+      path,
+      color.withValues(alpha: color.a * style.insetShadowOpacity),
+      blur / 2,
+      false,
+    );
+    canvas.restore();
   }
 
   @override

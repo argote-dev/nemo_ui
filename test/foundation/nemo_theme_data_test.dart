@@ -67,8 +67,60 @@ void main() {
         expect(base.copyWith(), base);
         expect(changed, isNot(base));
         expect(changed.styleFor(NemoButtonState.pressed).foregroundBlend, .2);
+        expect(base.resting.accentOpacity, greaterThan(0));
+        expect(base.pressed.insetShadowOpacity, greaterThan(0));
+        expect(base.resting.insetShadowOpacity, 0);
         expect(NemoButtonTokens.lerp(base, changed, 1), changed);
         expect(NemoButtonTokens.highContrast.pressed.shadowOpacity, 0);
+        expect(NemoButtonTokens.highContrast.pressed.insetShadowOpacity, 0);
+      },
+    );
+
+    test(
+      'button content and progress meet contrast on rendered state bodies',
+      () {
+        for (final NemoThemeData theme in <NemoThemeData>[
+          NemoThemeData.light(),
+          NemoThemeData.dark(),
+          NemoThemeData.highContrast(),
+        ]) {
+          for (final NemoButtonState state in NemoButtonState.values) {
+            final NemoButtonStateStyle style = theme.components.button.styleFor(
+              state,
+            );
+            final bool inactive =
+                state == NemoButtonState.disabled ||
+                state == NemoButtonState.loading;
+            Color body = inactive
+                ? theme.semantic.surfaceVariant
+                : Color.lerp(
+                    theme.semantic.surface,
+                    theme.semantic.surfaceVariant,
+                    style.surfaceVariantBlend,
+                  )!;
+            if (!inactive) {
+              body = Color.lerp(
+                body,
+                theme.semantic.foreground,
+                style.foregroundBlend,
+              )!;
+              body = Color.lerp(
+                body,
+                theme.semantic.primary,
+                style.accentOpacity,
+              )!;
+            }
+            final Color content = state == NemoButtonState.disabled
+                ? theme.semantic.mutedForeground
+                : theme.semantic.primary;
+
+            expect(
+              _contrastRatio(content, body),
+              greaterThanOrEqualTo(4.5),
+              reason: '${theme.semantic.surface.toARGB32()} ${state.name}',
+            );
+          }
+        }
       },
     );
 
@@ -94,4 +146,14 @@ void main() {
       expect(halfway.semantic.surface, isNot(dark.semantic.surface));
     });
   });
+}
+
+double _contrastRatio(Color a, Color b) {
+  final double lighter = a.computeLuminance() > b.computeLuminance()
+      ? a.computeLuminance()
+      : b.computeLuminance();
+  final double darker = a.computeLuminance() > b.computeLuminance()
+      ? b.computeLuminance()
+      : a.computeLuminance();
+  return (lighter + .05) / (darker + .05);
 }

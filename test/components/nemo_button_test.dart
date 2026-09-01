@@ -284,22 +284,53 @@ void main() {
       expect(tester.takeException(), isA<FlutterError>());
     });
 
-    testWidgets('renders deterministically in light, dark, and high contrast', (
+    testWidgets('renders deterministic tactile state evidence', (
       WidgetTester tester,
     ) async {
       configureGoldenTest(tester, physicalSize: const Size(960, 640));
       final FocusNode focusNode = FocusNode();
+      const Key normalKey = ValueKey<String>('golden-normal');
+      const Key hoveredKey = ValueKey<String>('golden-hovered');
+      const Key pressedKey = ValueKey<String>('golden-pressed');
+      const Key loadingKey = ValueKey<String>('golden-loading');
+      const Key focusedKey = ValueKey<String>('golden-focused');
+      const Key disabledKey = ValueKey<String>('golden-disabled');
       await tester.pumpWidget(
         goldenTestApp(
           disableAnimations: false,
-          child: Column(
+          child: Wrap(
             children: <Widget>[
-              _themedButton(NemoThemeData.light()),
-              _themedButton(NemoThemeData.dark(), focusNode: focusNode),
-              _themedButton(NemoThemeData.highContrast(), enabled: false),
+              _themedButton(NemoThemeData.light(), key: normalKey),
+              _themedButton(NemoThemeData.light(), key: hoveredKey),
+              _themedButton(NemoThemeData.light(), key: pressedKey),
+              _themedButton(
+                NemoThemeData.light(),
+                key: loadingKey,
+                loading: true,
+              ),
+              _themedButton(
+                NemoThemeData.dark(),
+                key: focusedKey,
+                focusNode: focusNode,
+              ),
+              _themedButton(
+                NemoThemeData.highContrast(),
+                key: disabledKey,
+                enabled: false,
+              ),
             ],
           ),
         ),
+      );
+
+      final TestGesture mouse = await tester.createGesture(
+        kind: PointerDeviceKind.mouse,
+      );
+      await mouse.addPointer(
+        location: tester.getCenter(find.byKey(hoveredKey)),
+      );
+      final TestGesture press = await tester.startGesture(
+        tester.getCenter(find.byKey(pressedKey)),
       );
       focusNode.requestFocus();
       await tester.pump(const Duration(milliseconds: 200));
@@ -307,39 +338,34 @@ void main() {
         find.byType(MaterialApp),
         matchesGoldenFile('goldens/nemo_button.png'),
       );
+      await press.up();
+      await mouse.removePointer();
     });
   });
 }
 
 Widget _themedButton(
   NemoThemeData theme, {
+  Key? key,
   FocusNode? focusNode,
   bool enabled = true,
+  bool loading = false,
 }) {
-  final NemoButtonTokens buttonTokens = theme.components.button;
-  final NemoThemeData goldenTheme = theme.copyWith(
-    components: theme.components.copyWith(
-      // Blurred mask filters are rasterized differently across Skia hosts.
-      // The golden keeps the real theme colors, state tones, outlines, and
-      // focus ring while functional tests cover the tokenized shadow states.
-      button: buttonTokens.copyWith(
-        resting: buttonTokens.resting.copyWith(shadowOpacity: 0),
-        hovered: buttonTokens.hovered.copyWith(shadowOpacity: 0),
-        focused: buttonTokens.focused.copyWith(shadowOpacity: 0),
-        pressed: buttonTokens.pressed.copyWith(shadowOpacity: 0),
-      ),
-    ),
-  );
   final Widget button = NemoButton(
+    key: key,
     focusNode: focusNode,
+    isLoading: loading,
     onPressed: enabled ? () {} : null,
     child: const SizedBox(width: 160, height: 16),
   );
-  return Theme(
-    data: goldenThemeData(goldenTheme),
-    child: ColoredBox(
-      color: goldenTheme.semantic.surface,
-      child: Padding(padding: const EdgeInsets.all(8), child: button),
+  return SizedBox(
+    width: 320,
+    child: Theme(
+      data: goldenThemeData(theme),
+      child: ColoredBox(
+        color: theme.semantic.surface,
+        child: Padding(padding: const EdgeInsets.all(32), child: button),
+      ),
     ),
   );
 }

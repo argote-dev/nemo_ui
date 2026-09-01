@@ -639,6 +639,7 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: 1,
       shadowOpacity: .5,
       outlineOpacity: .55,
+      accentOpacity: .02,
     ),
     hovered: NemoButtonStateStyle(
       foregroundBlend: .024,
@@ -646,6 +647,8 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: .94,
       shadowOpacity: .55,
       outlineOpacity: .6,
+      surfaceVariantBlend: .024,
+      accentOpacity: .024,
     ),
     focused: NemoButtonStateStyle(
       foregroundBlend: .036,
@@ -653,13 +656,18 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: .9,
       shadowOpacity: .55,
       outlineOpacity: .65,
+      surfaceVariantBlend: .036,
+      accentOpacity: .0242,
     ),
     pressed: NemoButtonStateStyle(
-      foregroundBlend: .12,
+      foregroundBlend: .06,
       shadowOffsetMultiplier: .28,
       shadowBlurMultiplier: .45,
-      shadowOpacity: .5,
+      shadowOpacity: 0,
       outlineOpacity: .7,
+      surfaceVariantBlend: .08,
+      accentOpacity: .0244,
+      insetShadowOpacity: .5,
     ),
     disabled: NemoButtonStateStyle(
       foregroundBlend: 0,
@@ -687,6 +695,7 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: 0,
       shadowOpacity: 0,
       outlineOpacity: 1,
+      accentOpacity: .02,
     ),
     hovered: NemoButtonStateStyle(
       foregroundBlend: .08,
@@ -694,6 +703,8 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: 0,
       shadowOpacity: 0,
       outlineOpacity: 1,
+      surfaceVariantBlend: .08,
+      accentOpacity: .024,
     ),
     focused: NemoButtonStateStyle(
       foregroundBlend: .1,
@@ -701,13 +712,17 @@ final class NemoButtonTokens {
       shadowBlurMultiplier: 0,
       shadowOpacity: 0,
       outlineOpacity: 1,
+      surfaceVariantBlend: .1,
+      accentOpacity: .0242,
     ),
     pressed: NemoButtonStateStyle(
-      foregroundBlend: .16,
+      foregroundBlend: .08,
       shadowOffsetMultiplier: 0,
       shadowBlurMultiplier: 0,
       shadowOpacity: 0,
       outlineOpacity: 1,
+      surfaceVariantBlend: .16,
+      accentOpacity: .0244,
     ),
     disabled: NemoButtonStateStyle(
       foregroundBlend: 0,
@@ -839,9 +854,12 @@ final class NemoButtonStateStyle {
     required this.shadowBlurMultiplier,
     required this.shadowOpacity,
     required this.outlineOpacity,
+    this.surfaceVariantBlend = 0,
+    this.accentOpacity = 0,
+    this.insetShadowOpacity = 0,
   });
 
-  /// Blend from semantic primary toward semantic foreground.
+  /// Blend the surface body toward semantic foreground for tonal feedback.
   final double foregroundBlend;
 
   /// Multiplier for the foundation shadow offset.
@@ -856,6 +874,15 @@ final class NemoButtonStateStyle {
   /// Opacity applied to the semantic outline.
   final double outlineOpacity;
 
+  /// Blend from the shared surface toward its local variant.
+  final double surfaceVariantBlend;
+
+  /// Restrained primary-color tint applied to primary-emphasis bodies.
+  final double accentOpacity;
+
+  /// Opacity of paired clipped inset shadows for recessed states.
+  final double insetShadowOpacity;
+
   /// Creates a copy with selectively replaced values.
   NemoButtonStateStyle copyWith({
     double? foregroundBlend,
@@ -863,6 +890,9 @@ final class NemoButtonStateStyle {
     double? shadowBlurMultiplier,
     double? shadowOpacity,
     double? outlineOpacity,
+    double? surfaceVariantBlend,
+    double? accentOpacity,
+    double? insetShadowOpacity,
   }) => NemoButtonStateStyle(
     foregroundBlend: foregroundBlend ?? this.foregroundBlend,
     shadowOffsetMultiplier:
@@ -870,6 +900,9 @@ final class NemoButtonStateStyle {
     shadowBlurMultiplier: shadowBlurMultiplier ?? this.shadowBlurMultiplier,
     shadowOpacity: shadowOpacity ?? this.shadowOpacity,
     outlineOpacity: outlineOpacity ?? this.outlineOpacity,
+    surfaceVariantBlend: surfaceVariantBlend ?? this.surfaceVariantBlend,
+    accentOpacity: accentOpacity ?? this.accentOpacity,
+    insetShadowOpacity: insetShadowOpacity ?? this.insetShadowOpacity,
   );
 
   /// Interpolates two state treatments.
@@ -891,6 +924,17 @@ final class NemoButtonStateStyle {
     )!,
     shadowOpacity: lerpDouble(a.shadowOpacity, b.shadowOpacity, t)!,
     outlineOpacity: lerpDouble(a.outlineOpacity, b.outlineOpacity, t)!,
+    surfaceVariantBlend: lerpDouble(
+      a.surfaceVariantBlend,
+      b.surfaceVariantBlend,
+      t,
+    )!,
+    accentOpacity: lerpDouble(a.accentOpacity, b.accentOpacity, t)!,
+    insetShadowOpacity: lerpDouble(
+      a.insetShadowOpacity,
+      b.insetShadowOpacity,
+      t,
+    )!,
   );
 
   @override
@@ -900,7 +944,10 @@ final class NemoButtonStateStyle {
       shadowOffsetMultiplier == other.shadowOffsetMultiplier &&
       shadowBlurMultiplier == other.shadowBlurMultiplier &&
       shadowOpacity == other.shadowOpacity &&
-      outlineOpacity == other.outlineOpacity;
+      outlineOpacity == other.outlineOpacity &&
+      surfaceVariantBlend == other.surfaceVariantBlend &&
+      accentOpacity == other.accentOpacity &&
+      insetShadowOpacity == other.insetShadowOpacity;
 
   @override
   int get hashCode => Object.hash(
@@ -909,6 +956,9 @@ final class NemoButtonStateStyle {
     shadowBlurMultiplier,
     shadowOpacity,
     outlineOpacity,
+    surfaceVariantBlend,
+    accentOpacity,
+    insetShadowOpacity,
   );
 }
 
