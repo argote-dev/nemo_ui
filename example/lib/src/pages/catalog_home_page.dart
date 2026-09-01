@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
 import '../catalog_app.dart';
+import '../nemo_page_shell.dart';
 import 'button_catalog_page.dart';
 import 'composed_catalog_page.dart';
 import 'surface_catalog_page.dart';
@@ -63,9 +64,9 @@ class CatalogHomePage extends StatelessWidget {
       ),
     );
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nemo component catalog')),
-      body: LayoutBuilder(
+    return NemoPageShell(
+      title: 'Nemo component catalog',
+      child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) => ListView(
           padding: EdgeInsets.all(theme.foundation.space24),
           children: <Widget>[
@@ -105,7 +106,7 @@ class _CatalogSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
     return NemoSurface(
-      depth: NemoSurfaceDepth.flat,
+      material: NemoMaterial.base,
       tone: NemoSurfaceTone.surfaceVariant,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

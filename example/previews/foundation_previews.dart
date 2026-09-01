@@ -52,11 +52,11 @@ Widget surfacePreview() {
       spacing: 24,
       runSpacing: 24,
       children: <Widget>[
-        for (final NemoSurfaceDepth depth in NemoSurfaceDepth.values)
+        for (final NemoMaterial material in NemoMaterial.values)
           NemoSurface(
-            depth: depth,
+            material: material,
             tone: NemoSurfaceTone.surfaceVariant,
-            child: Text(depth.name),
+            child: Text(material.name),
           ),
       ],
     ),

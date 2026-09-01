@@ -1,3 +1,10 @@
+## 0.2.0
+
+- **Breaking:** replaces five `NemoSurfaceDepth` appearances with four semantic `NemoMaterial` values and corner roles.
+- Adds shared fixed-top-left illumination and bounded material/interaction recipes.
+- Migrates Surface, Button, Switch, and the private catalog specimen to Theme Contract v2.
+- Adds migration and conformance/perception audit evidence.
+
 ## Unreleased
 
 ## 0.1.0 - 2026-08-30

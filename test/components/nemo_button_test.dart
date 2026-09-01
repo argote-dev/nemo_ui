@@ -284,6 +284,35 @@ void main() {
       expect(tester.takeException(), isA<FlutterError>());
     });
 
+    testWidgets(
+      'pressed content moves at most one pixel and reduced motion resolves directly',
+      (WidgetTester tester) async {
+        const Key contentKey = ValueKey<String>('pressed-content');
+        final Widget button = NemoButton(
+          onPressed: () {},
+          child: const KeyedSubtree(key: contentKey, child: Text('Press')),
+        );
+        await tester.pumpWidget(_host(button));
+        final double rest = tester.getTopLeft(find.byKey(contentKey)).dy;
+        final TestGesture press = await tester.startGesture(
+          tester.getCenter(find.text('Press')),
+        );
+        await tester.pump(const Duration(milliseconds: 200));
+        final double pressed = tester.getTopLeft(find.byKey(contentKey)).dy;
+        expect(pressed - rest, inInclusiveRange(0, 1));
+        await press.up();
+
+        await tester.pumpWidget(_host(button, disableAnimations: true));
+        final double reducedRest = tester.getTopLeft(find.byKey(contentKey)).dy;
+        final TestGesture reducedPress = await tester.startGesture(
+          tester.getCenter(find.text('Press')),
+        );
+        await tester.pump();
+        expect(tester.getTopLeft(find.byKey(contentKey)).dy - reducedRest, 1);
+        await reducedPress.up();
+      },
+    );
+
     testWidgets('renders deterministic tactile state evidence', (
       WidgetTester tester,
     ) async {

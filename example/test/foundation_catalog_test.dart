@@ -96,6 +96,24 @@ void main() {
 
     await tester.tap(find.text('Composed workspace').first);
     await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsNothing);
+    for (final String key in <String>[
+      'composed-workspace-canvas',
+      'composed-material-recessed',
+      'composed-material-raised',
+    ]) {
+      expect(find.byKey(ValueKey<String>(key)), findsOneWidget);
+    }
+    expect(
+      find.byKey(const ValueKey<String>('composed-material-floating')),
+      findsNothing,
+    );
+    await tester.tap(find.text('Save preferences'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('composed-material-floating')),
+      findsOneWidget,
+    );
     await tester.binding.setSurfaceSize(const Size(400, 800));
     await tester.pumpAndSettle();
     final BuildContext composedContext = tester.element(
@@ -166,13 +184,13 @@ void main() {
     await tester.pumpAndSettle();
 
     final Finder raisedCard = find.byKey(
-      const ValueKey<String>('surface-card-raised-surface-roundedMedium'),
+      const ValueKey<String>('surface-card-raised-surface-panel'),
     );
     final Finder adjacentCard = find.byKey(
-      const ValueKey<String>('surface-card-deeplySunken-surface-roundedMedium'),
+      const ValueKey<String>('surface-card-recessed-surface-panel'),
     );
     final Finder firstCard = find.byKey(
-      const ValueKey<String>('surface-card-deeplySunken-surface-roundedSmall'),
+      const ValueKey<String>('surface-card-recessed-surface-control'),
     );
     expect(tester.getSize(raisedCard).width, greaterThanOrEqualTo(220));
     expect(tester.getTopLeft(firstCard).dy, tester.getTopLeft(adjacentCard).dy);

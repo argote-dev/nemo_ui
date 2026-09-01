@@ -1,6 +1,6 @@
 name: nemo_ui
-description: An accessible, modern neumorphic design system for Flutter.
-version: 0.1.0
+description: An accessible tactile Flutter design system with a semantic material contract.
+version: 0.2.0
 homepage: https://github.com/argote-dev/nemo_ui
 repository: https://github.com/argote-dev/nemo_ui
 issue_tracker: https://github.com/argote-dev/nemo_ui/issues

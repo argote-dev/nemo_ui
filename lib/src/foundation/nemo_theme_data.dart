@@ -2,8 +2,12 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import 'nemo_material.dart';
 import 'nemo_motion.dart';
-import 'nemo_surface_contract.dart';
+
+Color _onColor(Color color) =>
+    color.computeLuminance() > .35 ? Colors.black : Colors.white;
+Color _lightPrimary(Color seed) => Color.lerp(seed, Colors.black, .24)!;
 
 /// Foundational, semantic, and component-ready design tokens for Nemo.
 @immutable
@@ -14,6 +18,8 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
     required this.semantic,
     required this.components,
     required this.motion,
+    this.materials = const NemoMaterialTokens.standard(),
+    this.interactions = NemoInteractionTokens.standard,
   });
 
   /// Spacing, radius, and depth values shared by the system.
@@ -28,30 +34,32 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
   /// Semantic timing and curves for tactile interactions.
   final NemoMotionTokens motion;
 
+  /// The four semantic material recipes owned by Theme Contract v2.
+  final NemoMaterialTokens materials;
+
+  /// Shared orthogonal interaction recipes consumed by Nemo controls.
+  final NemoInteractionTokens interactions;
+
   /// Creates Nemo's soft light theme from a [seedColor].
   factory NemoThemeData.light({
     Color seedColor = const Color(0xFF4F6EF7),
     NemoThemeOverrides overrides = const NemoThemeOverrides(),
   }) {
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: Brightness.light,
-    );
     final Color surface = const Color(0xFFF1F4F9);
     final NemoThemeData base = NemoThemeData(
       foundation: NemoFoundationTokens.standard,
       semantic: NemoSemanticTokens(
         surface: surface,
-        surfaceVariant: scheme.surfaceContainerHighest,
-        foreground: scheme.onSurface,
-        mutedForeground: scheme.onSurfaceVariant,
-        primary: scheme.primary,
-        onPrimary: scheme.onPrimary,
+        surfaceVariant: const Color(0xFFE2E7EF),
+        foreground: const Color(0xFF18202C),
+        mutedForeground: const Color(0xFF435064),
+        primary: _lightPrimary(seedColor),
+        onPrimary: _onColor(_lightPrimary(seedColor)),
         success: const Color(0xFF147A4A),
-        error: scheme.error,
-        onError: scheme.onError,
-        focusRing: scheme.primary,
-        outline: scheme.outlineVariant,
+        error: const Color(0xFFB3261E),
+        onError: Colors.white,
+        focusRing: _lightPrimary(seedColor),
+        outline: const Color(0xFF9CA6B5),
         highlightShadow: Colors.white.withValues(alpha: 0.92),
         lowlightShadow: const Color(0xFFB8C1D0),
       ),
@@ -66,25 +74,21 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
     Color seedColor = const Color(0xFF9DB0FF),
     NemoThemeOverrides overrides = const NemoThemeOverrides(),
   }) {
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: Brightness.dark,
-    );
     final Color surface = const Color(0xFF1B202A);
     final NemoThemeData base = NemoThemeData(
       foundation: NemoFoundationTokens.standard,
       semantic: NemoSemanticTokens(
         surface: surface,
-        surfaceVariant: scheme.surfaceContainerHighest,
-        foreground: scheme.onSurface,
-        mutedForeground: scheme.onSurfaceVariant,
-        primary: scheme.primary,
-        onPrimary: scheme.onPrimary,
+        surfaceVariant: const Color(0xFF292F3B),
+        foreground: const Color(0xFFF1F4F9),
+        mutedForeground: const Color(0xFFC2CAD7),
+        primary: seedColor,
+        onPrimary: _onColor(seedColor),
         success: const Color(0xFF6ED6A3),
-        error: scheme.error,
-        onError: scheme.onError,
-        focusRing: scheme.primary,
-        outline: scheme.outline,
+        error: const Color(0xFFFFB4AB),
+        onError: const Color(0xFF690005),
+        focusRing: seedColor,
+        outline: const Color(0xFF9AA5B6),
         highlightShadow: const Color(0xFF303847),
         lowlightShadow: Colors.black.withValues(alpha: 0.72),
       ),
@@ -101,11 +105,6 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
     NemoThemeOverrides overrides = const NemoThemeOverrides(),
   }) {
     final bool isDark = brightness == Brightness.dark;
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: brightness,
-      contrastLevel: 1,
-    );
     final NemoThemeData base = NemoThemeData(
       foundation: NemoFoundationTokens.standard,
       semantic: NemoSemanticTokens(
@@ -117,11 +116,11 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
         mutedForeground: isDark
             ? const Color(0xFFE0E0E0)
             : const Color(0xFF353535),
-        primary: scheme.primary,
-        onPrimary: scheme.onPrimary,
+        primary: seedColor,
+        onPrimary: _onColor(seedColor),
         success: isDark ? const Color(0xFF75F5AF) : const Color(0xFF006B35),
-        error: scheme.error,
-        onError: scheme.onError,
+        error: isDark ? const Color(0xFFFFB4AB) : const Color(0xFFB3261E),
+        onError: isDark ? const Color(0xFF690005) : Colors.white,
         focusRing: isDark ? Colors.white : Colors.black,
         outline: isDark ? Colors.white : Colors.black,
         highlightShadow: Colors.transparent,
@@ -129,6 +128,7 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
       ),
       components: NemoComponentTokens.highContrast,
       motion: NemoMotionTokens.standardTokens,
+      materials: const NemoMaterialTokens.highContrast(),
     );
     return overrides.applyTo(base);
   }
@@ -139,12 +139,16 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
     NemoSemanticTokens? semantic,
     NemoComponentTokens? components,
     NemoMotionTokens? motion,
+    NemoMaterialTokens? materials,
+    NemoInteractionTokens? interactions,
   }) {
     return NemoThemeData(
       foundation: foundation ?? this.foundation,
       semantic: semantic ?? this.semantic,
       components: components ?? this.components,
       motion: motion ?? this.motion,
+      materials: materials ?? this.materials,
+      interactions: interactions ?? this.interactions,
     );
   }
 
@@ -158,6 +162,8 @@ final class NemoThemeData extends ThemeExtension<NemoThemeData> {
       semantic: NemoSemanticTokens.lerp(semantic, other.semantic, t),
       components: NemoComponentTokens.lerp(components, other.components, t),
       motion: NemoMotionTokens.lerp(motion, other.motion, t),
+      materials: NemoMaterialTokens.lerp(materials, other.materials, t),
+      interactions: interactions,
     );
   }
 }
@@ -404,7 +410,6 @@ final class NemoComponentTokens {
     required this.controlHorizontalPadding,
     required this.focusRingWidth,
     required this.outlineWidth,
-    required this.surface,
     required this.button,
     required this.switchControl,
   });
@@ -421,9 +426,6 @@ final class NemoComponentTokens {
   /// The default tonal outline width.
   final double outlineWidth;
 
-  /// Visual contract for [NemoSurface].
-  final NemoSurfaceTokens surface;
-
   /// Visual contract for [NemoButton].
   final NemoButtonTokens button;
 
@@ -436,7 +438,6 @@ final class NemoComponentTokens {
     controlHorizontalPadding: 16,
     focusRingWidth: 3,
     outlineWidth: 1,
-    surface: NemoSurfaceTokens.standard,
     button: NemoButtonTokens.standard,
     switchControl: NemoSwitchTokens.standard,
   );
@@ -447,7 +448,6 @@ final class NemoComponentTokens {
     controlHorizontalPadding: 16,
     focusRingWidth: 3,
     outlineWidth: 2,
-    surface: NemoSurfaceTokens.highContrast,
     button: NemoButtonTokens.highContrast,
     switchControl: NemoSwitchTokens.highContrast,
   );
@@ -458,7 +458,6 @@ final class NemoComponentTokens {
     double? controlHorizontalPadding,
     double? focusRingWidth,
     double? outlineWidth,
-    NemoSurfaceTokens? surface,
     NemoButtonTokens? button,
     NemoSwitchTokens? switchControl,
   }) {
@@ -468,7 +467,6 @@ final class NemoComponentTokens {
           controlHorizontalPadding ?? this.controlHorizontalPadding,
       focusRingWidth: focusRingWidth ?? this.focusRingWidth,
       outlineWidth: outlineWidth ?? this.outlineWidth,
-      surface: surface ?? this.surface,
       button: button ?? this.button,
       switchControl: switchControl ?? this.switchControl,
     );
@@ -489,7 +487,6 @@ final class NemoComponentTokens {
       )!,
       focusRingWidth: lerpDouble(a.focusRingWidth, b.focusRingWidth, t)!,
       outlineWidth: lerpDouble(a.outlineWidth, b.outlineWidth, t)!,
-      surface: NemoSurfaceTokens.lerp(a.surface, b.surface, t),
       button: NemoButtonTokens.lerp(a.button, b.button, t),
       switchControl: NemoSwitchTokens.lerp(a.switchControl, b.switchControl, t),
     );
@@ -1149,295 +1146,6 @@ final class NemoButtonStateStyle {
   );
 }
 
-/// The component-level visual values for a Nemo surface.
-@immutable
-final class NemoSurfaceTokens {
-  /// Creates visual values for every supported depth.
-  const NemoSurfaceTokens({
-    required this.deeplySunken,
-    required this.sunken,
-    required this.flat,
-    required this.raised,
-    required this.elevated,
-  });
-
-  /// The deepest inset treatment.
-  final NemoSurfaceDepthStyle deeplySunken;
-
-  /// The standard inset treatment.
-  final NemoSurfaceDepthStyle sunken;
-
-  /// The neutral treatment.
-  final NemoSurfaceDepthStyle flat;
-
-  /// The standard raised treatment.
-  final NemoSurfaceDepthStyle raised;
-
-  /// The strongest raised treatment.
-  final NemoSurfaceDepthStyle elevated;
-
-  /// The default soft-neumorphic surface treatments.
-  static const NemoSurfaceTokens standard = NemoSurfaceTokens(
-    deeplySunken: NemoSurfaceDepthStyle(
-      intensity: -2,
-      tonalOverlayOpacity: 0.13,
-      outlineOpacity: 0.16,
-      shadowOpacity: 0.62,
-      blurMultiplier: 1,
-      offsetMultiplier: 1,
-      tonalColor: NemoSurfaceTonalColor.lowlightShadow,
-    ),
-    sunken: NemoSurfaceDepthStyle(
-      intensity: -1,
-      tonalOverlayOpacity: 0.075,
-      outlineOpacity: 0.12,
-      shadowOpacity: 0.42,
-      blurMultiplier: 0.65,
-      offsetMultiplier: 0.65,
-      tonalColor: NemoSurfaceTonalColor.lowlightShadow,
-    ),
-    flat: NemoSurfaceDepthStyle(
-      intensity: 0,
-      tonalOverlayOpacity: 0.012,
-      outlineOpacity: 0.14,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.outline,
-    ),
-    raised: NemoSurfaceDepthStyle(
-      intensity: 1,
-      tonalOverlayOpacity: 0.018,
-      outlineOpacity: 0.12,
-      shadowOpacity: 0.42,
-      blurMultiplier: 0.65,
-      offsetMultiplier: 0.65,
-      tonalColor: NemoSurfaceTonalColor.highlightShadow,
-    ),
-    elevated: NemoSurfaceDepthStyle(
-      intensity: 2,
-      tonalOverlayOpacity: 0.055,
-      outlineOpacity: 0.16,
-      shadowOpacity: 0.62,
-      blurMultiplier: 1,
-      offsetMultiplier: 1,
-      tonalColor: NemoSurfaceTonalColor.highlightShadow,
-    ),
-  );
-
-  /// High contrast keeps direction but intentionally collapses magnitude.
-  static const NemoSurfaceTokens highContrast = NemoSurfaceTokens(
-    deeplySunken: NemoSurfaceDepthStyle(
-      intensity: -1,
-      tonalOverlayOpacity: 0.14,
-      outlineOpacity: 0.85,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.foreground,
-    ),
-    sunken: NemoSurfaceDepthStyle(
-      intensity: -1,
-      tonalOverlayOpacity: 0.14,
-      outlineOpacity: 0.85,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.foreground,
-    ),
-    flat: NemoSurfaceDepthStyle(
-      intensity: 0,
-      tonalOverlayOpacity: 0.05,
-      outlineOpacity: 0.45,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
-    ),
-    raised: NemoSurfaceDepthStyle(
-      intensity: 1,
-      tonalOverlayOpacity: 0.8,
-      outlineOpacity: 1,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
-    ),
-    elevated: NemoSurfaceDepthStyle(
-      intensity: 1,
-      tonalOverlayOpacity: 0.8,
-      outlineOpacity: 1,
-      shadowOpacity: 0,
-      blurMultiplier: 0,
-      offsetMultiplier: 0,
-      tonalColor: NemoSurfaceTonalColor.surfaceVariant,
-    ),
-  );
-
-  /// Returns the style associated with [depth].
-  NemoSurfaceDepthStyle styleFor(NemoSurfaceDepth depth) => switch (depth) {
-    NemoSurfaceDepth.deeplySunken => deeplySunken,
-    NemoSurfaceDepth.sunken => sunken,
-    NemoSurfaceDepth.flat => flat,
-    NemoSurfaceDepth.raised => raised,
-    NemoSurfaceDepth.elevated => elevated,
-  };
-
-  /// Creates a copy with selectively replaced depth styles.
-  NemoSurfaceTokens copyWith({
-    NemoSurfaceDepthStyle? deeplySunken,
-    NemoSurfaceDepthStyle? sunken,
-    NemoSurfaceDepthStyle? flat,
-    NemoSurfaceDepthStyle? raised,
-    NemoSurfaceDepthStyle? elevated,
-  }) => NemoSurfaceTokens(
-    deeplySunken: deeplySunken ?? this.deeplySunken,
-    sunken: sunken ?? this.sunken,
-    flat: flat ?? this.flat,
-    raised: raised ?? this.raised,
-    elevated: elevated ?? this.elevated,
-  );
-
-  /// Interpolates component surface tokens.
-  static NemoSurfaceTokens lerp(
-    NemoSurfaceTokens a,
-    NemoSurfaceTokens b,
-    double t,
-  ) => NemoSurfaceTokens(
-    deeplySunken: NemoSurfaceDepthStyle.lerp(a.deeplySunken, b.deeplySunken, t),
-    sunken: NemoSurfaceDepthStyle.lerp(a.sunken, b.sunken, t),
-    flat: NemoSurfaceDepthStyle.lerp(a.flat, b.flat, t),
-    raised: NemoSurfaceDepthStyle.lerp(a.raised, b.raised, t),
-    elevated: NemoSurfaceDepthStyle.lerp(a.elevated, b.elevated, t),
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      other is NemoSurfaceTokens &&
-      deeplySunken == other.deeplySunken &&
-      sunken == other.sunken &&
-      flat == other.flat &&
-      raised == other.raised &&
-      elevated == other.elevated;
-
-  @override
-  int get hashCode => Object.hash(deeplySunken, sunken, flat, raised, elevated);
-}
-
-/// Explicit visual values for one surface depth.
-@immutable
-final class NemoSurfaceDepthStyle {
-  /// Creates one depth's visual values.
-  const NemoSurfaceDepthStyle({
-    required this.intensity,
-    required this.tonalOverlayOpacity,
-    required this.outlineOpacity,
-    required this.shadowOpacity,
-    required this.blurMultiplier,
-    required this.offsetMultiplier,
-    required this.tonalColor,
-  });
-
-  /// Signed relief used to route outer versus inset shadows.
-  final double intensity;
-
-  /// Opacity applied to the semantic base tone.
-  final double tonalOverlayOpacity;
-
-  /// Opacity of the semantic outline.
-  final double outlineOpacity;
-
-  /// Opacity multiplier for tactile shadows.
-  final double shadowOpacity;
-
-  /// Explicit multiplier for the foundation shadow blur.
-  final double blurMultiplier;
-
-  /// Explicit multiplier for the foundation shadow offset.
-  final double offsetMultiplier;
-
-  /// The semantic color used for the tonal contrast adjustment.
-  final NemoSurfaceTonalColor tonalColor;
-
-  /// Creates a copy with selectively replaced values.
-  NemoSurfaceDepthStyle copyWith({
-    double? intensity,
-    double? tonalOverlayOpacity,
-    double? outlineOpacity,
-    double? shadowOpacity,
-    double? blurMultiplier,
-    double? offsetMultiplier,
-    NemoSurfaceTonalColor? tonalColor,
-  }) => NemoSurfaceDepthStyle(
-    intensity: intensity ?? this.intensity,
-    tonalOverlayOpacity: tonalOverlayOpacity ?? this.tonalOverlayOpacity,
-    outlineOpacity: outlineOpacity ?? this.outlineOpacity,
-    shadowOpacity: shadowOpacity ?? this.shadowOpacity,
-    blurMultiplier: blurMultiplier ?? this.blurMultiplier,
-    offsetMultiplier: offsetMultiplier ?? this.offsetMultiplier,
-    tonalColor: tonalColor ?? this.tonalColor,
-  );
-
-  /// Interpolates two depth styles.
-  static NemoSurfaceDepthStyle lerp(
-    NemoSurfaceDepthStyle a,
-    NemoSurfaceDepthStyle b,
-    double t,
-  ) => NemoSurfaceDepthStyle(
-    intensity: lerpDouble(a.intensity, b.intensity, t)!,
-    tonalOverlayOpacity: lerpDouble(
-      a.tonalOverlayOpacity,
-      b.tonalOverlayOpacity,
-      t,
-    )!,
-    outlineOpacity: lerpDouble(a.outlineOpacity, b.outlineOpacity, t)!,
-    shadowOpacity: lerpDouble(a.shadowOpacity, b.shadowOpacity, t)!,
-    blurMultiplier: lerpDouble(a.blurMultiplier, b.blurMultiplier, t)!,
-    offsetMultiplier: lerpDouble(a.offsetMultiplier, b.offsetMultiplier, t)!,
-    tonalColor: t < 0.5 ? a.tonalColor : b.tonalColor,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      other is NemoSurfaceDepthStyle &&
-      intensity == other.intensity &&
-      tonalOverlayOpacity == other.tonalOverlayOpacity &&
-      outlineOpacity == other.outlineOpacity &&
-      shadowOpacity == other.shadowOpacity &&
-      blurMultiplier == other.blurMultiplier &&
-      offsetMultiplier == other.offsetMultiplier &&
-      tonalColor == other.tonalColor;
-
-  @override
-  int get hashCode => Object.hash(
-    intensity,
-    tonalOverlayOpacity,
-    outlineOpacity,
-    shadowOpacity,
-    blurMultiplier,
-    offsetMultiplier,
-    tonalColor,
-  );
-}
-
-/// Semantic color source for a Surface depth's tonal adjustment.
-enum NemoSurfaceTonalColor {
-  /// Uses the theme highlight shadow color.
-  highlightShadow,
-
-  /// Uses the theme lowlight shadow color.
-  lowlightShadow,
-
-  /// Uses the theme foreground color.
-  foreground,
-
-  /// Uses the semantic outline color.
-  outline,
-
-  /// Uses the alternate semantic surface color.
-  surfaceVariant,
-}
-
 /// Optional group-level overrides applied by theme factories.
 @immutable
 final class NemoThemeOverrides {
@@ -1447,6 +1155,8 @@ final class NemoThemeOverrides {
     this.semantic,
     this.components,
     this.motion,
+    this.materials,
+    this.interactions,
   });
 
   /// Replaces foundational tokens when non-null.
@@ -1461,6 +1171,12 @@ final class NemoThemeOverrides {
   /// Replaces motion tokens when non-null.
   final NemoMotionTokens? motion;
 
+  /// Replaces v2 material recipes when non-null.
+  final NemoMaterialTokens? materials;
+
+  /// Replaces shared interaction recipes when non-null.
+  final NemoInteractionTokens? interactions;
+
   /// Applies the configured overrides to [base].
   NemoThemeData applyTo(NemoThemeData base) {
     return base.copyWith(
@@ -1468,6 +1184,8 @@ final class NemoThemeOverrides {
       semantic: semantic,
       components: components,
       motion: motion,
+      materials: materials,
+      interactions: interactions,
     );
   }
 }

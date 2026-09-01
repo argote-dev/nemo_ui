@@ -80,3 +80,10 @@ API without an explicit architecture decision.
 Flutter SDK animation primitives are the default. Native Flutter Widget
 Previewer is the preview surface, which establishes Flutter 3.47.0 as the
 minimum supported version.
+
+## Theme Contract v2
+
+For 0.2.0, the normative [Theme Contract v2](theme-contract-v2.md) supersedes
+the five-depth rendering model. `NemoThemeData` remains the single public entry
+point; its four materials and shared illumination are bounded contracts rather
+than public drawing hooks.
