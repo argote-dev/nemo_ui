@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../foundation/nemo_illumination.dart';
@@ -6,6 +8,7 @@ import '../foundation/nemo_motion.dart';
 import '../foundation/nemo_surface_contract.dart';
 import '../foundation/nemo_theme.dart';
 import '../foundation/nemo_theme_data.dart';
+import 'nemo_surface_renderer.dart';
 
 export '../foundation/nemo_material.dart';
 export '../foundation/nemo_surface_contract.dart'
@@ -15,7 +18,7 @@ export '../foundation/nemo_surface_contract.dart'
 ///
 /// Theme Contract v2 uses exactly four [material] values. [depth] is a
 /// deprecated v1 migration mapping; new code must use [material].
-class NemoSurface extends StatelessWidget {
+class NemoSurface extends StatefulWidget {
   /// Creates a Nemo surface.
   const NemoSurface({
     required this.child,
@@ -26,6 +29,7 @@ class NemoSurface extends StatelessWidget {
     @Deprecated('Use cornerRole instead.') this.shape,
     this.padding,
     this.clipBehavior = Clip.none,
+    this.enableProgressiveRendering = false,
     super.key,
   });
 
@@ -53,6 +57,13 @@ class NemoSurface extends StatelessWidget {
   /// Clipping behavior for the content.
   final Clip clipBehavior;
 
+  /// Whether this surface may opt into Nemo's experimental progressive finish.
+  ///
+  /// Defaults to false until profile and conformance evidence establishes a
+  /// supported performance envelope. False retains portable Canvas rendering
+  /// and does not expose shader assets, uniforms, or callbacks.
+  final bool enableProgressiveRendering;
+
   NemoMaterial get _material =>
       material ??
       switch (depth ?? NemoSurfaceDepth.raised) {
@@ -64,41 +75,117 @@ class NemoSurface extends StatelessWidget {
       };
 
   @override
+  State<NemoSurface> createState() => _NemoSurfaceState();
+}
+
+final class _NemoSurfaceState extends State<NemoSurface> {
+  bool _requestedProgram = false;
+  bool _isTransitioning = false;
+  _SurfaceMaterialVisual? _lastTarget;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadFragmentProgramIfEligible();
+  }
+
+  @override
+  void didUpdateWidget(covariant NemoSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.material != widget.material ||
+        oldWidget.depth != widget.depth ||
+        oldWidget.enableProgressiveRendering !=
+            widget.enableProgressiveRendering) {
+      _loadFragmentProgramIfEligible();
+    }
+  }
+
+  void _loadFragmentProgramIfEligible() {
+    final NemoThemeData theme = NemoTheme.of(context);
+    final bool isHighContrast =
+        theme.materials.recipeFor(widget._material).shadowOpacity == 0;
+    final bool eligibleMaterial =
+        widget._material == NemoMaterial.raised ||
+        widget._material == NemoMaterial.floating;
+    if (_requestedProgram ||
+        !widget.enableProgressiveRendering ||
+        isHighContrast ||
+        !eligibleMaterial) {
+      return;
+    }
+    _requestedProgram = true;
+    // Loading is intentionally initiated from the widget lifecycle, never paint.
+    SurfaceFragmentProgramCache.load().whenComplete(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
     final NemoMotionTokens motion = theme.motion.resolveFor(context);
-    final double radius = switch (shape) {
+    final double radius = switch (widget.shape) {
       NemoSurfaceShape.roundedSmall => theme.foundation.radiusSmall,
       NemoSurfaceShape.roundedMedium => theme.foundation.radiusMedium,
       NemoSurfaceShape.roundedLarge => theme.foundation.radiusLarge,
-      null => switch (cornerRole) {
+      null => switch (widget.cornerRole) {
         NemoCornerRole.control => theme.foundation.radiusSmall,
         NemoCornerRole.panel => theme.foundation.radiusMedium,
         NemoCornerRole.floating => theme.foundation.radiusLarge,
       },
     };
-    final Color base = tone == NemoSurfaceTone.surface
+    final Color base = widget.tone == NemoSurfaceTone.surface
         ? theme.semantic.surface
         : theme.semantic.surfaceVariant;
     final _SurfaceMaterialVisual target = _SurfaceMaterialVisual(
-      theme.materials.recipeFor(_material),
+      theme.materials.recipeFor(widget._material),
       base,
       radius,
     );
+    if (_lastTarget case final _SurfaceMaterialVisual previous
+        when previous.differsFrom(target)) {
+      _isTransitioning = motion.standard != Duration.zero;
+    }
+    _lastTarget = target;
     final Widget paddedChild = Padding(
-      padding: padding ?? EdgeInsets.all(theme.foundation.space16),
-      child: child,
+      padding: widget.padding ?? EdgeInsets.all(theme.foundation.space16),
+      child: widget.child,
     );
-    Widget render(_SurfaceMaterialVisual visual, Widget content) => CustomPaint(
-      painter: _NemoMaterialPainter(theme: theme, visual: visual),
-      child: clipBehavior == Clip.none
-          ? content
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(visual.radius),
-              clipBehavior: clipBehavior,
-              child: content,
-            ),
-    );
+    Widget render(_SurfaceMaterialVisual visual, Widget content) =>
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final Size size = constraints.biggest;
+            final bool isHighContrast = visual.recipe.shadowOpacity == 0;
+            final SurfaceRenderer renderer = SurfaceRendererSelector.select(
+              SurfaceRendererInput(
+                material: widget._material,
+                size: size,
+                isHighContrast: isHighContrast,
+                isEnabled:
+                    widget.enableProgressiveRendering && !_isTransitioning,
+              ),
+              hasFragmentProgram: SurfaceFragmentProgramCache.program != null,
+            );
+            return CustomPaint(
+              painter: _NemoMaterialPainter(
+                theme: theme,
+                visual: visual,
+                fragmentProgram: renderer == SurfaceRenderer.fragment
+                    ? SurfaceFragmentProgramCache.program
+                    : null,
+              ),
+              child: widget.clipBehavior == Clip.none
+                  ? content
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(visual.radius),
+                      clipBehavior: widget.clipBehavior,
+                      child: content,
+                    ),
+            );
+          },
+        );
     if (motion.standard == Duration.zero) {
       return render(target, paddedChild);
     }
@@ -107,6 +194,11 @@ class NemoSurface extends StatelessWidget {
       duration: motion.standard,
       curve: motion.standardCurve,
       child: paddedChild,
+      onEnd: () {
+        if (_isTransitioning && mounted) {
+          setState(() => _isTransitioning = false);
+        }
+      },
       builder: (context, visual, child) => render(visual, child!),
     );
   }
@@ -118,6 +210,9 @@ final class _SurfaceMaterialVisual {
   final NemoMaterialRecipe recipe;
   final Color color;
   final double radius;
+
+  bool differsFrom(_SurfaceMaterialVisual other) =>
+      recipe != other.recipe || color != other.color || radius != other.radius;
 }
 
 final class _SurfaceMaterialVisualTween extends Tween<_SurfaceMaterialVisual> {
@@ -132,9 +227,15 @@ final class _SurfaceMaterialVisualTween extends Tween<_SurfaceMaterialVisual> {
 }
 
 final class _NemoMaterialPainter extends CustomPainter {
-  const _NemoMaterialPainter({required this.theme, required this.visual});
+  const _NemoMaterialPainter({
+    required this.theme,
+    required this.visual,
+    this.fragmentProgram,
+  });
   final NemoThemeData theme;
   final _SurfaceMaterialVisual visual;
+  final ui.FragmentProgram? fragmentProgram;
+
   @override
   void paint(Canvas canvas, Size size) => NemoIllumination.paint(
     canvas,
@@ -143,6 +244,15 @@ final class _NemoMaterialPainter extends CustomPainter {
     recipe: visual.recipe,
     baseColor: visual.color,
     radius: visual.radius,
+    localFill: fragmentProgram == null
+        ? null
+        : (Canvas canvas, RRect shape) => SurfaceFragmentFillPainter.paint(
+            canvas,
+            shape,
+            program: fragmentProgram!,
+            baseColor: visual.color,
+            radius: visual.radius,
+          ),
   );
   @override
   bool? hitTest(Offset position) => false;
@@ -152,5 +262,6 @@ final class _NemoMaterialPainter extends CustomPainter {
       old.theme != theme ||
       old.visual.recipe != visual.recipe ||
       old.visual.color != visual.color ||
-      old.visual.radius != visual.radius;
+      old.visual.radius != visual.radius ||
+      old.fragmentProgram != fragmentProgram;
 }
