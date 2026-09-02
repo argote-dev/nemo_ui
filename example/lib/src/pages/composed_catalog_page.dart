@@ -16,11 +16,24 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
   bool _dailyBrief = true;
   bool _isSaved = false;
   Timer? _confirmationTimer;
+  final FocusNode _commandPaletteFocus = FocusNode(
+    debugLabel: 'Command palette trigger',
+  );
 
   @override
   void dispose() {
     _confirmationTimer?.cancel();
+    _commandPaletteFocus.dispose();
     super.dispose();
+  }
+
+  Future<void> _openCommandPalette() async {
+    _commandPaletteFocus.requestFocus();
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => const _CommandPaletteDialog(),
+    );
+    if (mounted) _commandPaletteFocus.requestFocus();
   }
 
   void _save() {
@@ -56,6 +69,8 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
               onDailyBriefChanged: (bool value) =>
                   setState(() => _dailyBrief = value),
               onSave: _save,
+              onOpenCommandPalette: _openCommandPalette,
+              commandPaletteFocusNode: _commandPaletteFocus,
             ),
           );
           return ListView(
@@ -146,12 +161,16 @@ class _Preferences extends StatelessWidget {
     required this.dailyBrief,
     required this.onDailyBriefChanged,
     required this.onSave,
+    required this.onOpenCommandPalette,
+    required this.commandPaletteFocusNode,
   });
 
   final NemoThemeData theme;
   final bool dailyBrief;
   final ValueChanged<bool> onDailyBriefChanged;
   final VoidCallback onSave;
+  final VoidCallback onOpenCommandPalette;
+  final FocusNode commandPaletteFocusNode;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -173,7 +192,71 @@ class _Preferences extends StatelessWidget {
           onPressed: onSave,
           child: const Text('Save preferences'),
         ),
+        SizedBox(height: theme.foundation.space12),
+        NemoButton(
+          semanticLabel: 'Open command palette',
+          focusNode: commandPaletteFocusNode,
+          onPressed: onOpenCommandPalette,
+          child: const Text('Open command palette'),
+        ),
       ],
     ),
   );
+}
+
+/// A route-owned transient composition; Nemo does not expose a generic modal.
+class _CommandPaletteDialog extends StatelessWidget {
+  const _CommandPaletteDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final NemoThemeData theme = NemoTheme.of(context);
+    return FocusTraversalGroup(
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(24),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Semantics(
+          scopesRoute: true,
+          explicitChildNodes: true,
+          namesRoute: true,
+          label: 'Command palette',
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: NemoSurface(
+              key: const ValueKey<String>('composed-command-palette'),
+              material: NemoMaterial.floating,
+              finish: NemoSurfaceFinish.tactileGlass,
+              cornerRole: NemoCornerRole.floating,
+              padding: EdgeInsets.all(theme.foundation.space24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Semantics(header: true, child: const Text('Command palette')),
+                  SizedBox(height: theme.foundation.space8),
+                  Text(
+                    'Find a workspace action without leaving this page.',
+                    style: TextStyle(color: theme.semantic.mutedForeground),
+                  ),
+                  SizedBox(height: theme.foundation.space16),
+                  NemoButton(
+                    semanticLabel: 'Create workspace',
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Create workspace'),
+                  ),
+                  SizedBox(height: theme.foundation.space12),
+                  NemoButton(
+                    semanticLabel: 'Dismiss command palette',
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Dismiss'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

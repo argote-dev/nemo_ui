@@ -146,3 +146,18 @@ Widget pageAndSectionPreview() => MaterialApp(
     ),
   ),
 );
+
+/// Bounded transient floating treatment; persistent catalog surfaces stay standard.
+@Preview(name: 'Tactile glass overlay', group: 'Composition')
+Widget tactileGlassOverlayPreview() => _FoundationPreview(
+  theme: NemoThemeData.light(),
+  child: const SizedBox(
+    width: 360,
+    child: NemoSurface(
+      material: NemoMaterial.floating,
+      finish: NemoSurfaceFinish.tactileGlass,
+      cornerRole: NemoCornerRole.floating,
+      child: Text('Transient command palette'),
+    ),
+  ),
+);

@@ -6,9 +6,48 @@ import 'package:flutter/material.dart';
 
 import '../foundation/nemo_illumination.dart';
 import '../foundation/nemo_material.dart';
+import '../foundation/nemo_surface_contract.dart';
 
 /// Internal renderer choices. This source file is deliberately not exported.
-enum SurfaceRenderer { canvas, fragment }
+enum SurfaceRenderer { canvas, fragment, backdrop }
+
+/// The bounded, non-customizable recipe for tactile glass.
+@immutable
+final class TactileGlassTokens {
+  const TactileGlassTokens({
+    required this.fillOpacity,
+    required this.rimOpacity,
+    required this.occlusionOpacity,
+    required this.boundaryOpacity,
+    required this.backdropBlurSigma,
+  }) : assert(fillOpacity >= 0 && fillOpacity <= 1),
+       assert(rimOpacity >= 0 && rimOpacity <= 1),
+       assert(occlusionOpacity >= 0 && occlusionOpacity <= 1),
+       assert(boundaryOpacity >= 0 && boundaryOpacity <= 1),
+       assert(backdropBlurSigma >= 0);
+
+  static const TactileGlassTokens standard = TactileGlassTokens(
+    fillOpacity: .92,
+    rimOpacity: .18,
+    occlusionOpacity: .16,
+    boundaryOpacity: .62,
+    backdropBlurSigma: 12,
+  );
+
+  static const TactileGlassTokens highContrast = TactileGlassTokens(
+    fillOpacity: 1,
+    rimOpacity: 0,
+    occlusionOpacity: 0,
+    boundaryOpacity: 1,
+    backdropBlurSigma: 0,
+  );
+
+  final double fillOpacity;
+  final double rimOpacity;
+  final double occlusionOpacity;
+  final double boundaryOpacity;
+  final double backdropBlurSigma;
+}
 
 /// Bounded facts used to decide whether a decorative fragment fill is safe.
 @immutable
@@ -18,12 +57,14 @@ final class SurfaceRendererInput {
     required this.size,
     required this.isHighContrast,
     required this.isEnabled,
+    this.finish = NemoSurfaceFinish.standard,
   });
 
   final NemoMaterial material;
   final Size size;
   final bool isHighContrast;
   final bool isEnabled;
+  final NemoSurfaceFinish finish;
 }
 
 /// Internal deterministic test seam; it is not part of Nemo's public API.
@@ -50,7 +91,18 @@ final class SurfaceRendererSelector {
         input.size.height.isFinite &&
         input.size.width >= _minimumSize.width &&
         input.size.height >= _minimumSize.height;
-    final SurfaceRenderer fallback = canUseFragment
+    final bool canUseBackdrop =
+        input.isEnabled &&
+        !input.isHighContrast &&
+        input.material == NemoMaterial.floating &&
+        input.finish == NemoSurfaceFinish.tactileGlass &&
+        input.size.width.isFinite &&
+        input.size.height.isFinite &&
+        input.size.width >= _minimumSize.width &&
+        input.size.height >= _minimumSize.height;
+    final SurfaceRenderer fallback = canUseBackdrop
+        ? SurfaceRenderer.backdrop
+        : canUseFragment
         ? SurfaceRenderer.fragment
         : SurfaceRenderer.canvas;
     return debugSurfaceRendererSelectionOverride?.call(input, fallback) ??

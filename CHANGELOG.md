@@ -14,6 +14,9 @@
   labels and conventional Flutter editing integration.
 - Add `NemoTopBar`, an edge-to-edge, route-aware page top bar with safe-area,
   system-overlay, RTL, semantics, and high-contrast support.
+- Add the opt-in `NemoSurfaceFinish.tactileGlass` treatment for transient
+  `NemoMaterial.floating` overlays, including clipped backdrop and opaque
+  high-contrast/Canvas fallback recipes.
 
 ### Changed
 
@@ -39,5 +42,5 @@
 
 ## 0.0.1
 
-* Establish the Nemo UI package foundation, including dynamic theme, asset,
+- Establish the Nemo UI package foundation, including dynamic theme, asset,
   localization, motion, preview, example, quality, and governance contracts.

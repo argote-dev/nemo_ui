@@ -288,6 +288,139 @@ void main() {
     expect(find.bySemanticsLabel('Theme transition content'), findsOneWidget);
   });
 
+  test('tactile glass is an opt-in floating finish, not a material', () {
+    expect(NemoMaterial.values, hasLength(4));
+    expect(NemoSurfaceFinish.values, contains(NemoSurfaceFinish.tactileGlass));
+    expect(
+      () => NemoSurface(
+        material: NemoMaterial.raised,
+        finish: NemoSurfaceFinish.tactileGlass,
+        child: const SizedBox(),
+      ),
+      throwsAssertionError,
+    );
+  });
+
+  testWidgets('tactile glass retains descendant semantics in high contrast', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.highContrast(),
+        SizedBox(
+          width: 360,
+          height: 240,
+          child: NemoSurface(
+            material: NemoMaterial.floating,
+            finish: NemoSurfaceFinish.tactileGlass,
+            child: Semantics(
+              container: true,
+              label: 'Readable floating overlay',
+              child: const Text('Readable floating overlay'),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Readable floating overlay'), findsOneWidget);
+    expect(find.byType(BackdropFilter), findsNothing);
+  });
+
+  testWidgets('platform high contrast forces the opaque Canvas recipe', (
+    tester,
+  ) async {
+    final List<SurfaceRendererInput> selections = <SurfaceRendererInput>[];
+    debugSurfaceRendererSelectionOverride = (input, fallback) {
+      selections.add(input);
+      return fallback;
+    };
+    addTearDown(() => debugSurfaceRendererSelectionOverride = null);
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        const SizedBox(
+          width: 360,
+          height: 240,
+          child: NemoSurface(
+            material: NemoMaterial.floating,
+            finish: NemoSurfaceFinish.tactileGlass,
+            child: Text('Platform contrast overlay'),
+          ),
+        ),
+        highContrast: true,
+      ),
+    );
+
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(selections.single.isHighContrast, isTrue);
+  });
+
+  testWidgets('reduced motion resolves tactile glass without animation', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        const SizedBox(
+          width: 360,
+          height: 240,
+          child: NemoSurface(
+            material: NemoMaterial.floating,
+            finish: NemoSurfaceFinish.tactileGlass,
+            child: Text('Final overlay'),
+          ),
+        ),
+        disableAnimations: true,
+      ),
+    );
+
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    expect(tester.binding.transientCallbackCount, 0);
+  });
+
+  testWidgets(
+    'forced Canvas fallback keeps tactile-glass layout and content semantics',
+    (tester) async {
+      final List<SurfaceRenderer> fallbacks = <SurfaceRenderer>[];
+      debugSurfaceRendererSelectionOverride = (_, fallback) {
+        fallbacks.add(fallback);
+        return SurfaceRenderer.canvas;
+      };
+      addTearDown(() => debugSurfaceRendererSelectionOverride = null);
+      const Key surfaceKey = ValueKey<String>('tactile-glass-fallback');
+      await tester.pumpWidget(
+        _host(
+          NemoThemeData.light(),
+          SizedBox(
+            width: 360,
+            height: 240,
+            child: NemoSurface(
+              key: surfaceKey,
+              material: NemoMaterial.floating,
+              finish: NemoSurfaceFinish.tactileGlass,
+              child: Semantics(
+                container: true,
+                label: 'Fallback overlay',
+                child: Text('Fallback overlay'),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(tester.getSize(find.byKey(surfaceKey)), const Size(360, 240));
+      expect(
+        find.byWidgetPredicate(
+          (Widget widget) =>
+              widget is Semantics &&
+              widget.properties.label == 'Fallback overlay',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(BackdropFilter), findsNothing);
+      expect(fallbacks, everyElement(SurfaceRenderer.backdrop));
+    },
+  );
+
   test('high contrast material recipes are shadow-free and bordered', () {
     final NemoThemeData theme = NemoThemeData.highContrast();
     for (final NemoMaterial material in NemoMaterial.values) {
@@ -302,6 +435,7 @@ Widget _host(
   NemoThemeData theme,
   Widget child, {
   bool disableAnimations = false,
+  bool highContrast = false,
   TextDirection direction = TextDirection.ltr,
   TextScaler textScaler = TextScaler.noScaling,
 }) => MaterialApp(
@@ -309,6 +443,7 @@ Widget _host(
   home: MediaQuery(
     data: MediaQueryData(
       disableAnimations: disableAnimations,
+      highContrast: highContrast,
       textScaler: textScaler,
     ),
     child: Directionality(

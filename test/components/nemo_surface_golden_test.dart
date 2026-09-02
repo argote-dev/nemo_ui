@@ -21,6 +21,110 @@ void main() {
       );
     },
   );
+
+  testWidgets('renders normal and high-contrast tactile-glass overlays', (
+    WidgetTester tester,
+  ) async {
+    configureGoldenTest(tester, physicalSize: const Size(720, 600));
+
+    await tester.pumpWidget(
+      goldenTestApp(scaffold: false, child: const _TactileGlassScenes()),
+    );
+
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/nemo_tactile_glass.png'),
+    );
+  });
+}
+
+class _TactileGlassScenes extends StatelessWidget {
+  const _TactileGlassScenes();
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: <Widget>[
+      _TactileGlassScene(theme: NemoThemeData.light()),
+      _TactileGlassScene(theme: NemoThemeData.highContrast()),
+    ],
+  );
+}
+
+class _TactileGlassScene extends StatelessWidget {
+  const _TactileGlassScene({required this.theme});
+
+  final NemoThemeData theme;
+
+  @override
+  Widget build(BuildContext context) => Theme(
+    data: goldenThemeData(theme),
+    child: ColoredBox(
+      color: theme.semantic.surface,
+      child: SizedBox(
+        width: 720,
+        height: 300,
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Positioned(
+              left: 64,
+              top: 54,
+              child: _BackdropBlock(
+                color: theme.semantic.primary,
+                size: const Size(260, 84),
+              ),
+            ),
+            Positioned(
+              right: 72,
+              bottom: 48,
+              child: _BackdropBlock(
+                color: theme.semantic.error,
+                size: const Size(230, 96),
+              ),
+            ),
+            SizedBox(
+              width: 360,
+              height: 200,
+              child: NemoSurface(
+                material: NemoMaterial.floating,
+                finish: NemoSurfaceFinish.tactileGlass,
+                cornerRole: NemoCornerRole.floating,
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _ContentBlock(widthFactor: .52, height: 18),
+                    SizedBox(height: 20),
+                    _ContentBlock(height: 44),
+                    SizedBox(height: 12),
+                    _ContentBlock(widthFactor: .7, height: 32),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _BackdropBlock extends StatelessWidget {
+  const _BackdropBlock({required this.color, required this.size});
+
+  final Color color;
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.fromSize(
+    size: size,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+  );
 }
 
 class _SurfaceMaterialScenes extends StatelessWidget {
