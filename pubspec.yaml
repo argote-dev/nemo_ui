@@ -30,3 +30,5 @@ dev_dependencies:
 
 flutter:
   generate: true
+  shaders:
+    - shaders/nemo_surface.frag

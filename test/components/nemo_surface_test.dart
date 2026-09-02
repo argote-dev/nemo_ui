@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nemo_ui/nemo_ui.dart';
+import 'package:nemo_ui/src/components/nemo_surface_renderer.dart';
 
 void main() {
   test('v1 depth maps deliberately to the four v2 materials', () {
@@ -153,6 +154,140 @@ void main() {
     );
   });
 
+  testWidgets(
+    'Canvas fallback selection retains public layout and named descendant semantics',
+    (tester) async {
+      final List<SurfaceRendererInput> selections = <SurfaceRendererInput>[];
+      final List<SurfaceRenderer> fallbacks = <SurfaceRenderer>[];
+      debugSurfaceRendererSelectionOverride = (input, fallback) {
+        selections.add(input);
+        fallbacks.add(fallback);
+        return SurfaceRenderer.canvas;
+      };
+      addTearDown(() => debugSurfaceRendererSelectionOverride = null);
+      await tester.pumpWidget(
+        _host(
+          NemoThemeData.light(),
+          Wrap(
+            children: <Widget>[
+              _rendererFallbackSurface(
+                // The internal selection seam represents either an unavailable
+                // backend or the null result after a program-load failure.
+                label: 'Unavailable renderer content',
+                material: NemoMaterial.floating,
+                enableProgressiveRendering: true,
+              ),
+              _rendererFallbackSurface(
+                label: 'Unsupported dense content',
+                material: NemoMaterial.raised,
+                size: const Size(96, 48),
+                enableProgressiveRendering: true,
+              ),
+              _rendererFallbackSurface(
+                label: 'Opt-out content',
+                material: NemoMaterial.floating,
+              ),
+            ],
+          ),
+        ),
+      );
+      for (final String label in <String>[
+        'Unavailable renderer content',
+        'Unsupported dense content',
+        'Opt-out content',
+      ]) {
+        expect(
+          find.byWidgetPredicate(
+            (Widget widget) =>
+                widget is Semantics && widget.properties.label == label,
+          ),
+          findsOneWidget,
+        );
+      }
+      expect(
+        tester.getSize(find.byType(NemoSurface).first),
+        const Size(360, 240),
+      );
+      expect(selections, hasLength(3));
+      expect(fallbacks, everyElement(SurfaceRenderer.canvas));
+      expect(selections[1].size, const Size(96, 48));
+      expect(selections.last.isEnabled, isFalse);
+    },
+  );
+
+  testWidgets('high contrast retains Canvas layout and descendant semantics', (
+    tester,
+  ) async {
+    debugSurfaceRendererSelectionOverride = (_, _) => SurfaceRenderer.canvas;
+    addTearDown(() => debugSurfaceRendererSelectionOverride = null);
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.highContrast(),
+        _rendererFallbackSurface(
+          label: 'High contrast content',
+          material: NemoMaterial.floating,
+          enableProgressiveRendering: true,
+        ),
+      ),
+    );
+    expect(
+      find.byWidgetPredicate(
+        (Widget widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'High contrast content',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.getSize(find.byType(NemoSurface)), const Size(360, 240));
+  });
+
+  testWidgets('theme transitions keep the experimental finish on Canvas', (
+    tester,
+  ) async {
+    final List<SurfaceRendererInput> selections = <SurfaceRendererInput>[];
+    debugSurfaceRendererSelectionOverride = (input, fallback) {
+      selections.add(input);
+      return SurfaceRenderer.canvas;
+    };
+    addTearDown(() => debugSurfaceRendererSelectionOverride = null);
+    const Key surfaceKey = ValueKey<String>('theme-transition-surface');
+
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        SizedBox(
+          width: 360,
+          height: 240,
+          child: NemoSurface(
+            key: surfaceKey,
+            material: NemoMaterial.floating,
+            enableProgressiveRendering: true,
+            child: Semantics(label: 'Theme transition content'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.dark(),
+        SizedBox(
+          width: 360,
+          height: 240,
+          child: NemoSurface(
+            key: surfaceKey,
+            material: NemoMaterial.floating,
+            enableProgressiveRendering: true,
+            child: Semantics(label: 'Theme transition content'),
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 1));
+
+    expect(selections.last.isEnabled, isFalse);
+    expect(find.bySemanticsLabel('Theme transition content'), findsOneWidget);
+  });
+
   test('high contrast material recipes are shadow-free and bordered', () {
     final NemoThemeData theme = NemoThemeData.highContrast();
     for (final NemoMaterial material in NemoMaterial.values) {
@@ -180,5 +315,23 @@ Widget _host(
       textDirection: direction,
       child: Scaffold(body: child),
     ),
+  ),
+);
+
+// Renderer selection remains an internal test seam; consumers only observe the
+// stable NemoSurface layout and descendant semantics.
+
+Widget _rendererFallbackSurface({
+  required String label,
+  required NemoMaterial material,
+  bool enableProgressiveRendering = false,
+  Size size = const Size(360, 240),
+}) => SizedBox(
+  width: size.width,
+  height: size.height,
+  child: NemoSurface(
+    material: material,
+    enableProgressiveRendering: enableProgressiveRendering,
+    child: Semantics(container: true, label: label, child: Text(label)),
   ),
 );

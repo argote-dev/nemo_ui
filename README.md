@@ -238,6 +238,7 @@ can use the committed
 
 - [Foundation architecture](doc/architecture/foundation.md)
 - [Tactile visual language](doc/architecture/tactile-visual-language.md)
+- [Progressive surface renderer profile procedure](doc/architecture/progressive-surface-renderer.md)
 - [Motion and micro-interaction policy](doc/motion.md)
 - [Quality gates](doc/quality-gates.md)
 - [Pilot accessibility audit](doc/accessibility-audit.md)

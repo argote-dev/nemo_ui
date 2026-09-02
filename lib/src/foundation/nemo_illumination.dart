@@ -8,6 +8,9 @@ import 'nemo_theme_data.dart';
 /// Internal shared physical renderer. All Nemo relief uses this fixed top-left light.
 final class NemoIllumination {
   const NemoIllumination._();
+
+  /// Physical top-left source shared by every Nemo illumination treatment.
+  static const Offset topLeftLightDirection = Offset(-.70710678, -.70710678);
   static void paint(
     Canvas canvas,
     Size size, {
@@ -17,6 +20,7 @@ final class NemoIllumination {
     required double radius,
     bool focused = false,
     double? outlineOpacity,
+    void Function(Canvas canvas, RRect shape)? localFill,
   }) {
     final RRect shape = RRect.fromRectAndRadius(
       Offset.zero & size,
@@ -46,17 +50,21 @@ final class NemoIllumination {
         recipe.shadowOpacity,
       );
     }
-    canvas.drawRRect(shape, Paint()..color = baseColor);
-    if (recipe.tonalOverlayOpacity > 0) {
-      canvas.drawRRect(
-        shape,
-        Paint()
-          ..color =
-              (recipe.polarity == NemoIlluminationPolarity.inset
-                      ? theme.semantic.lowlightShadow
-                      : theme.semantic.highlightShadow)
-                  .withValues(alpha: recipe.tonalOverlayOpacity),
-      );
+    if (localFill != null) {
+      localFill(canvas, shape);
+    } else {
+      canvas.drawRRect(shape, Paint()..color = baseColor);
+      if (recipe.tonalOverlayOpacity > 0) {
+        canvas.drawRRect(
+          shape,
+          Paint()
+            ..color =
+                (recipe.polarity == NemoIlluminationPolarity.inset
+                        ? theme.semantic.lowlightShadow
+                        : theme.semantic.highlightShadow)
+                    .withValues(alpha: recipe.tonalOverlayOpacity),
+        );
+      }
     }
     if (recipe.polarity == NemoIlluminationPolarity.inset &&
         recipe.shadowOpacity > 0) {
