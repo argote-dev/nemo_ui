@@ -12,7 +12,7 @@ import 'nemo_surface_renderer.dart';
 
 export '../foundation/nemo_material.dart';
 export '../foundation/nemo_surface_contract.dart'
-    show NemoSurfaceDepth, NemoSurfaceTone, NemoSurfaceShape;
+    show NemoSurfaceDepth, NemoSurfaceTone, NemoSurfaceShape, NemoSurfaceFinish;
 
 /// A non-interactive, token-driven Nemo material composition primitive.
 ///
@@ -29,9 +29,16 @@ class NemoSurface extends StatefulWidget {
     @Deprecated('Use cornerRole instead.') this.shape,
     this.padding,
     this.clipBehavior = Clip.none,
+    this.finish = NemoSurfaceFinish.standard,
     this.enableProgressiveRendering = false,
     super.key,
-  });
+  }) : assert(
+         finish != NemoSurfaceFinish.tactileGlass ||
+             material == NemoMaterial.floating ||
+             (material == null && depth == NemoSurfaceDepth.elevated),
+         'NemoSurfaceFinish.tactileGlass is only valid for a resolved '
+         'NemoMaterial.floating surface.',
+       );
 
   /// Content displayed within the material.
   final Widget child;
@@ -56,6 +63,10 @@ class NemoSurface extends StatefulWidget {
 
   /// Clipping behavior for the content.
   final Clip clipBehavior;
+
+  /// Optional bounded finish. [NemoSurfaceFinish.tactileGlass] is valid only
+  /// for a resolved [NemoMaterial.floating] surface.
+  final NemoSurfaceFinish finish;
 
   /// Whether this surface may opt into Nemo's experimental progressive finish.
   ///
@@ -139,8 +150,18 @@ final class _NemoSurfaceState extends State<NemoSurface> {
     final Color base = widget.tone == NemoSurfaceTone.surface
         ? theme.semantic.surface
         : theme.semantic.surfaceVariant;
+    final NemoMaterialRecipe materialRecipe = theme.materials.recipeFor(
+      widget._material,
+    );
+    final bool highContrast =
+        MediaQuery.highContrastOf(context) || materialRecipe.shadowOpacity == 0;
+    final bool usesTactileGlass =
+        widget.finish == NemoSurfaceFinish.tactileGlass &&
+        widget._material == NemoMaterial.floating;
     final _SurfaceMaterialVisual target = _SurfaceMaterialVisual(
-      theme.materials.recipeFor(widget._material),
+      highContrast && usesTactileGlass
+          ? const NemoMaterialTokens.highContrast().floating
+          : materialRecipe,
       base,
       radius,
     );
@@ -157,24 +178,34 @@ final class _NemoSurfaceState extends State<NemoSurface> {
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final Size size = constraints.biggest;
-            final bool isHighContrast = visual.recipe.shadowOpacity == 0;
+            final bool isHighContrast =
+                highContrast || visual.recipe.shadowOpacity == 0;
             final SurfaceRenderer renderer = SurfaceRendererSelector.select(
               SurfaceRendererInput(
                 material: widget._material,
                 size: size,
                 isHighContrast: isHighContrast,
                 isEnabled:
-                    widget.enableProgressiveRendering && !_isTransitioning,
+                    (widget.enableProgressiveRendering || usesTactileGlass) &&
+                    !_isTransitioning,
+                finish: widget.finish,
               ),
               hasFragmentProgram: SurfaceFragmentProgramCache.program != null,
             );
-            return CustomPaint(
+            final bool useBackdrop = renderer == SurfaceRenderer.backdrop;
+            final TactileGlassTokens glassTokens = isHighContrast
+                ? TactileGlassTokens.highContrast
+                : TactileGlassTokens.standard;
+            final Widget painted = CustomPaint(
               painter: _NemoMaterialPainter(
                 theme: theme,
                 visual: visual,
                 fragmentProgram: renderer == SurfaceRenderer.fragment
                     ? SurfaceFragmentProgramCache.program
                     : null,
+                tactileGlass: usesTactileGlass,
+                glassTokens: glassTokens,
+                translucentFill: useBackdrop,
               ),
               child: widget.clipBehavior == Clip.none
                   ? content
@@ -183,6 +214,27 @@ final class _NemoSurfaceState extends State<NemoSurface> {
                       clipBehavior: widget.clipBehavior,
                       child: content,
                     ),
+            );
+            if (!useBackdrop) return painted;
+            // Keep the Canvas-painted outer shadows outside the clipped filter.
+            // Only the sampled backdrop is localized to the floating plane.
+            return Stack(
+              fit: StackFit.passthrough,
+              children: <Widget>[
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(visual.radius),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(
+                        sigmaX: glassTokens.backdropBlurSigma,
+                        sigmaY: glassTokens.backdropBlurSigma,
+                      ),
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ),
+                painted,
+              ],
             );
           },
         );
@@ -230,11 +282,17 @@ final class _NemoMaterialPainter extends CustomPainter {
   const _NemoMaterialPainter({
     required this.theme,
     required this.visual,
+    required this.tactileGlass,
+    required this.glassTokens,
+    required this.translucentFill,
     this.fragmentProgram,
   });
   final NemoThemeData theme;
   final _SurfaceMaterialVisual visual;
   final ui.FragmentProgram? fragmentProgram;
+  final bool tactileGlass;
+  final TactileGlassTokens glassTokens;
+  final bool translucentFill;
 
   @override
   void paint(Canvas canvas, Size size) => NemoIllumination.paint(
@@ -244,7 +302,10 @@ final class _NemoMaterialPainter extends CustomPainter {
     recipe: visual.recipe,
     baseColor: visual.color,
     radius: visual.radius,
-    localFill: fragmentProgram == null
+    outlineOpacity: tactileGlass ? glassTokens.boundaryOpacity : null,
+    localFill: tactileGlass
+        ? (Canvas canvas, RRect shape) => _paintTactileGlass(canvas, shape)
+        : fragmentProgram == null
         ? null
         : (Canvas canvas, RRect shape) => SurfaceFragmentFillPainter.paint(
             canvas,
@@ -254,6 +315,52 @@ final class _NemoMaterialPainter extends CustomPainter {
             radius: visual.radius,
           ),
   );
+  void _paintTactileGlass(Canvas canvas, RRect shape) {
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..color = visual.color.withValues(
+          alpha: translucentFill ? glassTokens.fillOpacity : 1,
+        ),
+    );
+    final Paint rim = Paint()
+      ..color = theme.semantic.highlightShadow.withValues(
+        alpha: glassTokens.rimOpacity,
+      )
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = theme.components.outlineWidth * 1.5;
+    final Paint occlusion = Paint()
+      ..color = theme.semantic.lowlightShadow.withValues(
+        alpha: glassTokens.occlusionOpacity,
+      )
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = theme.components.outlineWidth * 1.5;
+    canvas.drawPath(_topLeftRim(shape), rim);
+    canvas.drawPath(_bottomRightOcclusion(shape), occlusion);
+  }
+
+  Path _topLeftRim(RRect shape) => Path()
+    ..moveTo(shape.left, shape.bottom - visual.radius)
+    ..lineTo(shape.left, shape.top + visual.radius)
+    ..quadraticBezierTo(
+      shape.left,
+      shape.top,
+      shape.left + visual.radius,
+      shape.top,
+    )
+    ..lineTo(shape.right - visual.radius, shape.top);
+
+  Path _bottomRightOcclusion(RRect shape) => Path()
+    ..moveTo(shape.left + visual.radius, shape.bottom)
+    ..lineTo(shape.right - visual.radius, shape.bottom)
+    ..quadraticBezierTo(
+      shape.right,
+      shape.bottom,
+      shape.right,
+      shape.bottom - visual.radius,
+    )
+    ..lineTo(shape.right, shape.top + visual.radius);
+
   @override
   bool? hitTest(Offset position) => false;
 
@@ -263,5 +370,8 @@ final class _NemoMaterialPainter extends CustomPainter {
       old.visual.recipe != visual.recipe ||
       old.visual.color != visual.color ||
       old.visual.radius != visual.radius ||
-      old.fragmentProgram != fragmentProgram;
+      old.fragmentProgram != fragmentProgram ||
+      old.tactileGlass != tactileGlass ||
+      old.glassTokens != glassTokens ||
+      old.translucentFill != translucentFill;
 }

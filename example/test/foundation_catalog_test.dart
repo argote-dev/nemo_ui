@@ -181,6 +181,63 @@ void main() {
     expect(find.text('Preferences saved'), findsOneWidget);
   });
 
+  testWidgets(
+    'command palette is modal, traversable, dismissible, and restores focus',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(const NemoFoundationCatalog());
+      await tester.tap(find.text('Composed workspace').first);
+      await tester.pumpAndSettle();
+
+      final Finder trigger = find.text('Open command palette');
+      await tester.tap(trigger);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('composed-command-palette')),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel('Command palette'), findsWidgets);
+      expect(find.text('Create workspace'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        Focus.of(tester.element(find.text('Create workspace'))).hasFocus,
+        isTrue,
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(Focus.of(tester.element(find.text('Dismiss'))).hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(
+        Focus.of(tester.element(find.text('Create workspace'))).hasFocus,
+        isTrue,
+      );
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.pump();
+      expect(Focus.of(tester.element(find.text('Dismiss'))).hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('composed-command-palette')),
+        findsNothing,
+      );
+      expect(Focus.of(tester.element(trigger)).hasFocus, isTrue);
+
+      await tester.tap(trigger);
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(4, 4));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey<String>('composed-command-palette')),
+        findsNothing,
+      );
+      expect(Focus.of(tester.element(trigger)).hasFocus, isTrue);
+    },
+  );
+
   testWidgets('surface screen keeps responsive component cards', (
     WidgetTester tester,
   ) async {

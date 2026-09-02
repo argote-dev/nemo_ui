@@ -36,3 +36,15 @@ enum NemoSurfaceShape {
   /// Uses the large foundation radius.
   roundedLarge,
 }
+
+/// Optional visual finish for a [NemoMaterial.floating] surface.
+///
+/// This does not add a material: tactile glass is reserved for transient,
+/// prominent floating planes and is never the default finish.
+enum NemoSurfaceFinish {
+  /// The portable, opaque Nemo material recipe.
+  standard,
+
+  /// A bounded, high-opacity local glass treatment for floating overlays.
+  tactileGlass,
+}

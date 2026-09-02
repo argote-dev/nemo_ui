@@ -263,3 +263,12 @@ Nemo now composes four semantic materials—`recessed`, `base`, `raised`, and
 pre-1.0 migration aid. See the [Theme Contract](doc/architecture/theme-contract-v2.md),
 [0.2.0 migration guide](doc/migration-0.2.0.md), and
 [conformance audit](doc/theme-contract-v2-audit.md), and [calibration rationale](doc/research/theme-v2-calibration.md).
+
+### Bounded tactile glass
+
+Transient floating overlays can opt into `NemoSurfaceFinish.tactileGlass`. It
+is deliberately not a fifth material or a default for persistent components:
+use it with `NemoMaterial.floating` for route-owned command palettes, inspectors,
+and modal sheets. The treatment is high-opacity, locally clipped, fixed (never
+animated), and falls back to an opaque boundary-led Canvas surface in high
+contrast or unsupported renderers. See [NemoSurface](doc/components/nemo-surface.md).

@@ -22,3 +22,21 @@ or widening fragment adoption, profile a representative screen on each target
 
 Attach the raw profiler captures or an auditable summary to the adoption change. Do not enable a catalog or other default adoption until this gate and conformance review are complete.
 No device metrics are asserted by this repository until such evidence exists.
+
+## Bounded tactile-glass overlays
+
+`NemoSurfaceFinish.tactileGlass` extends the selector only for sufficiently
+large, finite `NemoMaterial.floating` planes. An eligible surface may sample a
+fixed, clipped local backdrop while Canvas continues to own external shadows and
+the explicit edge. Blur and procedural noise are never animated.
+
+The internal recipe tokenizes fill opacity, top-left rim light, bottom-right
+occlusion, boundary opacity, and blur sigma. It is intentionally not exposed as
+per-surface customization. High contrast, unsupported or forced renderers,
+small/dense surfaces, and transitions resolve to an opaque Canvas fill with the
+same layout and descendant semantics.
+
+Profile the complete route-owned overlay scene with the procedure above. Include
+opening/dismissal, keyboard traversal, focus restoration, and representative
+background content; do not profile the filter in isolation or widen adoption
+without the recorded conformance and performance evidence.

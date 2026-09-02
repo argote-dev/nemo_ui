@@ -105,27 +105,31 @@ Canvas. Android, iOS, and web retain the Canvas fallback.
 The native Flutter Widget Previewer scenario is
 [`Surface depths`](../../example/previews/foundation_previews.dart), in the
 **Components** group. It exposes the standard material matrix with its portable
-Canvas baseline. The example-app surface route is
+Canvas baseline. **Composition / Tactile glass overlay** shows the bounded
+opt-in finish. The example-app surface route is
 [`SurfaceCatalogPage`](../../example/lib/src/pages/surface_catalog_page.dart).
-The experimental finish is intentionally not previewed or adopted until its
-profile and conformance gate is complete.
+The composed-workspace route demonstrates the finish in a realistic modal
+command palette without making it a persistent-surface default.
 
 ## Test matrix
 
 - **Unit/widget:** `test/components/nemo_surface_test.dart` covers v1 migration
   mapping, all materials, clipping, layout, RTL/text scaling, reduced motion,
   named descendant semantics, Canvas fallback selection, high contrast, and
-  explicit opt-out.
+  explicit opt-out, plus tactile-glass eligibility, forced fallback, platform
+  high contrast, and reduced motion.
 - **Semantics/interactions:** surface preserves caller-owned semantics and hit
   testing; it has no interaction, localization, or focus role of its own.
-- **Preview:** the native **Components / Surface depths** Widget Previewer
-  scenario covers the standard Canvas material matrix; the example route is
-  manual catalog evidence.
+- **Preview:** the native **Components / Surface depths** scenario covers the
+  standard Canvas material matrix; **Composition / Tactile glass overlay** and
+  the example command palette cover contextual opt-in usage.
 - **Golden:** `test/components/nemo_surface_golden_test.dart` retains the
   existing Canvas canonical `goldens/nemo_surface.png`: a 720×900 composed
   light/dark/high-contrast scene covering all materials, polarity, nesting, and
-  shadow-free replacement. It pins Android, DPR 1, English locale, no text
-  scaling, fixed animation preference, Ahem font, and glyph-free content.
+  shadow-free replacement. `goldens/nemo_tactile_glass.png` adds normal and
+  opaque high-contrast overlay evidence. Both pin Android, DPR 1, English
+  locale, no text scaling, fixed animation preference, Ahem font, and
+  glyph-free content.
 
 Intentional Canvas baseline updates require tracked PNG review and before/after
 pull-request evidence. Do not create local or noncanonical PNG baselines.
@@ -148,3 +152,35 @@ Canvas when evidence is incomplete or regresses.
 `deeplySunken`/`sunken` to `recessed`, `flat` to `base`, `raised` to `raised`,
 and `elevated` to `floating`; use `cornerRole` instead. See the
 [0.2 migration guide](../migration-0.2.0.md).
+
+## Tactile-glass overlay finish
+
+`NemoSurfaceFinish.tactileGlass` is an opt-in finish for a resolved
+`NemoMaterial.floating` surface. It is not a fifth material and is reserved for
+prominent transient planes such as command palettes, inspectors, modal sheets,
+and brief feedback. Cards, fields, rows, lists, pages, and `NemoTopBar` retain
+the standard opaque finish.
+
+```dart
+NemoSurface(
+  material: NemoMaterial.floating,
+  finish: NemoSurfaceFinish.tactileGlass,
+  cornerRole: NemoCornerRole.floating,
+  child: const Text('Command palette'),
+)
+```
+
+The private bounded recipe fixes a high-opacity semantic fill, localized blur,
+top-left rim, bottom-right occlusion, and explicit boundary. The recipe is not a
+per-widget styling surface: foreground contrast remains based on Nemo's resolved
+floating surface rather than sampled background content. Unsupported or small
+rendering targets use the same opaque Canvas composition. High contrast removes
+decorative translucency and shadows while retaining the opaque fill, boundary,
+content, and caller-owned focus evidence.
+
+Backdrop blur is clipped to the local rounded plane and its radius is never
+animated. Reduced motion reaches the same final hierarchy immediately. Surface
+continues to own no route, modal, focus, or dismissal behavior; compose it with
+Flutter's route and focus facilities. The example catalog's command palette
+shows focus containment, visible focus, Escape dismissal, modal semantics, and
+focus restoration.
