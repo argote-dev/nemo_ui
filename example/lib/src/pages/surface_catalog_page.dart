@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
-import '../nemo_page_shell.dart';
-
 /// Demonstrates each Nemo surface treatment in a spacious responsive grid.
 class SurfaceCatalogPage extends StatelessWidget {
   /// Creates the surface catalog page.
@@ -14,9 +12,9 @@ class SurfaceCatalogPage extends StatelessWidget {
     final NemoLocalizations strings = NemoLocalizations.of(context);
     final Widget? brandMark = NemoAssetScope.of(context)
         .widgetFor(NemoAsset.brandMark, context);
-    return NemoPageShell(
+    return NemoPage(
       key: const ValueKey<String>('NemoSurfaceScreen'),
-      title: 'NemoSurface',
+      topBar: const NemoTopBar(title: Text('NemoSurface')),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double gap = theme.foundation.space24;
@@ -28,7 +26,7 @@ class SurfaceCatalogPage extends StatelessWidget {
               : 1;
           final double cardWidth = (available - gap * (columns - 1)) / columns;
           return ListView(
-            padding: EdgeInsets.all(gap),
+            padding: EdgeInsets.zero,
             children: <Widget>[
               Text(
                 'Tactile surfaces',

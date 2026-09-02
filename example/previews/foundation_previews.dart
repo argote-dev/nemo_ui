@@ -96,3 +96,27 @@ Widget switchPreview() => _FoundationPreview(
     ],
   ),
 );
+
+/// Native Flutter Widget Previewer definition for the page composition grammar.
+@Preview(name: 'Page and section', group: 'Composition')
+Widget pageAndSectionPreview() => MaterialApp(
+  theme: ThemeData(
+    extensions: <ThemeExtension<dynamic>>[NemoThemeData.light()],
+  ),
+  home: NemoPage(
+    topBar: const NemoTopBar(title: Text('Account settings')),
+    child: ListView(
+      children: const <Widget>[
+        NemoSection(
+          heading: Text('Notifications'),
+          description: Text('Choose how Nemo keeps you informed.'),
+          child: NemoSwitch(
+            value: true,
+            onChanged: null,
+            child: Text('Daily brief'),
+          ),
+        ),
+      ],
+    ),
+  ),
+);

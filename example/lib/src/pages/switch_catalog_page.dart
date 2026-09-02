@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
-import '../nemo_page_shell.dart';
-
 /// Demonstrates controlled, disabled, and localized switch states.
 class SwitchCatalogPage extends StatefulWidget {
   /// Creates the switch catalog page.
@@ -19,11 +17,11 @@ class _SwitchCatalogPageState extends State<SwitchCatalogPage> {
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
-    return NemoPageShell(
+    return NemoPage(
       key: const ValueKey<String>('NemoSwitchScreen'),
-      title: 'NemoSwitch',
+      topBar: const NemoTopBar(title: Text('NemoSwitch')),
       child: ListView(
-        padding: EdgeInsets.all(theme.foundation.space24),
+        padding: EdgeInsets.zero,
         children: <Widget>[
           Text(
             'Binary selection',

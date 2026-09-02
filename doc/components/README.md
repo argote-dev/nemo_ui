@@ -12,6 +12,9 @@ in the same pull request as any intentional behavioral or visual change.
 
 ## Available playbooks
 
+- [NemoPage](nemo-page.md) — safe-area-aware base canvas and page composition.
+- [NemoSection](nemo-section.md) — semantic content hierarchy and tokenized spacing.
+
 - [NemoSurface](nemo-surface.md) — non-interactive, token-driven visual
   grouping primitive.
 - [NemoButton](nemo-button.md) — accessible, token-driven primary action.

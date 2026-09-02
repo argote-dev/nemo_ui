@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
-import '../nemo_page_shell.dart';
-
 /// A realistic preference workflow composed from Nemo foundation controls.
 class ComposedCatalogPage extends StatefulWidget {
   /// Creates the composed workspace demonstration.
@@ -38,9 +36,9 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
-    return NemoPageShell(
+    return NemoPage(
       key: const ValueKey<String>('ComposedWorkspaceScreen'),
-      title: 'Composed workspace',
+      topBar: const NemoTopBar(title: Text('Composed workspace')),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final bool wide = constraints.maxWidth >= 650;
@@ -61,42 +59,38 @@ class _ComposedCatalogPageState extends State<ComposedCatalogPage> {
             ),
           );
           return ListView(
-            padding: EdgeInsets.all(theme.foundation.space24),
+            padding: EdgeInsets.zero,
             children: <Widget>[
-              Semantics(
-                header: true,
-                child: Text(
+              NemoSection(
+                heading: Text(
                   'Workspace readiness',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-              ),
-              SizedBox(height: theme.foundation.space8),
-              Text(
-                'A preference flow with clear labels, outlines, and status text.',
-                style: TextStyle(color: theme.semantic.mutedForeground),
-              ),
-              SizedBox(height: theme.foundation.space24),
-              NemoSurface(
-                key: const ValueKey<String>('composed-workspace-canvas'),
-                material: NemoMaterial.base,
-                tone: NemoSurfaceTone.surfaceVariant,
-                child: wide
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Expanded(child: summary),
-                          SizedBox(width: theme.foundation.space24),
-                          Expanded(child: preferences),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          summary,
-                          SizedBox(height: theme.foundation.space24),
-                          preferences,
-                        ],
-                      ),
+                description: const Text(
+                  'A preference flow with clear labels, outlines, and status text.',
+                ),
+                child: NemoSurface(
+                  key: const ValueKey<String>('composed-workspace-canvas'),
+                  material: NemoMaterial.base,
+                  tone: NemoSurfaceTone.surfaceVariant,
+                  child: wide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(child: summary),
+                            SizedBox(width: theme.foundation.space24),
+                            Expanded(child: preferences),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+                            summary,
+                            SizedBox(height: theme.foundation.space24),
+                            preferences,
+                          ],
+                        ),
+                ),
               ),
               if (_isSaved) ...<Widget>[
                 SizedBox(height: theme.foundation.space16),
