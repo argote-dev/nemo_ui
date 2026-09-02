@@ -18,6 +18,7 @@ void main() {
     expect(find.byType(NemoSection), findsNWidgets(2));
     expect(find.byType(NemoButton), findsWidgets);
     expect(find.byType(NemoSwitch), findsNWidgets(3));
+    expect(find.byType(NemoField), findsNothing);
     expect(find.byType(SegmentedButton<Brightness>), findsNothing);
     expect(find.byType(SwitchListTile), findsNothing);
     expect(find.byType(Slider), findsNothing);
@@ -35,6 +36,7 @@ void main() {
       ('NemoSurface', const ValueKey<String>('NemoSurfaceScreen')),
       ('NemoButton', const ValueKey<String>('NemoButtonScreen')),
       ('NemoSwitch', const ValueKey<String>('NemoSwitchScreen')),
+      ('NemoField', const ValueKey<String>('NemoFieldScreen')),
       ('Composed workspace', const ValueKey<String>('ComposedWorkspaceScreen')),
     ]) {
       await tester.tap(find.text(title).first);
@@ -95,6 +97,8 @@ void main() {
     expect(find.text('Text scale: 2.0×'), findsOneWidget);
     expect(find.bySemanticsLabel('Teal seed selected'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Composed workspace').first);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Composed workspace').first);
     await tester.pumpAndSettle();
     expect(find.byType(AppBar), findsNothing);

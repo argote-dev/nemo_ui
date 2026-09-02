@@ -10,6 +10,8 @@
 ### Added
 
 - Add `NemoPage` and `NemoSection` composition primitives with safe-area-aware base canvas, semantic hierarchy, and tokenized spacing.
+- Add `NemoField`, an accessible recessed text-entry primitive with persistent
+  labels and conventional Flutter editing integration.
 - Add `NemoTopBar`, an edge-to-edge, route-aware page top bar with safe-area,
   system-overlay, RTL, semantics, and high-contrast support.
 

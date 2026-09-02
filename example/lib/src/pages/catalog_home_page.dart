@@ -4,6 +4,7 @@ import 'package:nemo_ui/nemo_ui.dart';
 import '../catalog_app.dart';
 import 'button_catalog_page.dart';
 import 'composed_catalog_page.dart';
+import 'field_catalog_page.dart';
 import 'surface_catalog_page.dart';
 import 'switch_catalog_page.dart';
 
@@ -53,6 +54,11 @@ class CatalogHomePage extends StatelessWidget {
             title: 'NemoSwitch',
             subtitle: 'Binary selection states',
             page: SwitchCatalogPage(),
+          ),
+          _ComponentDestination(
+            title: 'NemoField',
+            subtitle: 'Accessible recessed text entry',
+            page: FieldCatalogPage(),
           ),
           _ComponentDestination(
             title: 'Composed workspace',

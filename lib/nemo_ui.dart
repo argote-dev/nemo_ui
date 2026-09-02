@@ -2,6 +2,7 @@
 library;
 
 export 'src/components/nemo_button.dart';
+export 'src/components/nemo_field.dart';
 export 'src/components/nemo_page.dart';
 export 'src/components/nemo_section.dart';
 export 'src/components/nemo_surface.dart';
