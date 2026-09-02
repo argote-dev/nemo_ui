@@ -14,7 +14,8 @@ void main() {
     expect(find.text('Global configuration'), findsOneWidget);
     expect(find.text('Explore Nemo'), findsOneWidget);
     expect(find.text('Composed workspace'), findsOneWidget);
-    expect(find.byType(NemoSurface), findsWidgets);
+    expect(find.byType(NemoPage), findsOneWidget);
+    expect(find.byType(NemoSection), findsNWidgets(2));
     expect(find.byType(NemoButton), findsWidgets);
     expect(find.byType(NemoSwitch), findsNWidgets(3));
     expect(find.byType(SegmentedButton<Brightness>), findsNothing);
@@ -97,6 +98,8 @@ void main() {
     await tester.tap(find.text('Composed workspace').first);
     await tester.pumpAndSettle();
     expect(find.byType(AppBar), findsNothing);
+    expect(find.byType(NemoPage), findsOneWidget);
+    expect(find.byType(NemoSection), findsOneWidget);
     for (final String key in <String>[
       'composed-workspace-canvas',
       'composed-material-recessed',

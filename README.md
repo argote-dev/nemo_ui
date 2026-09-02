@@ -121,6 +121,29 @@ NemoSwitch(
 See the [NemoSwitch playbook](doc/components/nemo-switch.md) for its API,
 accessibility contract, and token customization.
 
+## Page composition
+
+`NemoPage` establishes a safe-area-aware base canvas and can compose a persistent
+`NemoTopBar`; `NemoSection` supplies semantic hierarchy and tokenized spacing.
+Scrolling, routes, typography, and interactions remain application-owned.
+
+```dart
+NemoPage(
+  topBar: const NemoTopBar(title: Text('Settings')),
+  child: ListView(
+    children: const <Widget>[
+      NemoSection(
+        heading: Text('Notifications'),
+        child: NotificationSettings(),
+      ),
+    ],
+  ),
+)
+```
+
+See the [NemoPage](doc/components/nemo-page.md) and
+[NemoSection](doc/components/nemo-section.md) playbooks.
+
 ## Top bar
 
 `NemoTopBar` is the persistent, edge-to-edge structural canvas for a page. It

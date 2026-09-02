@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
-import '../nemo_page_shell.dart';
-
 /// Demonstrates button resting, disabled, and loading states.
 class ButtonCatalogPage extends StatefulWidget {
   /// Creates the button catalog page.
@@ -18,11 +16,11 @@ class _ButtonCatalogPageState extends State<ButtonCatalogPage> {
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
-    return NemoPageShell(
+    return NemoPage(
       key: const ValueKey<String>('NemoButtonScreen'),
-      title: 'NemoButton',
+      topBar: const NemoTopBar(title: Text('NemoButton')),
       child: ListView(
-        padding: EdgeInsets.all(theme.foundation.space24),
+        padding: EdgeInsets.zero,
         children: <Widget>[
           Text(
             'Action states',

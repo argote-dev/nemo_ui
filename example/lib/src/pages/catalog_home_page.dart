@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
 import '../catalog_app.dart';
-import '../nemo_page_shell.dart';
 import 'button_catalog_page.dart';
 import 'composed_catalog_page.dart';
 import 'surface_catalog_page.dart';
@@ -64,11 +63,11 @@ class CatalogHomePage extends StatelessWidget {
       ),
     );
 
-    return NemoPageShell(
-      title: 'Nemo component catalog',
+    return NemoPage(
+      topBar: const NemoTopBar(title: Text('Nemo component catalog')),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) => ListView(
-          padding: EdgeInsets.all(theme.foundation.space24),
+          padding: EdgeInsets.zero,
           children: <Widget>[
             if (constraints.maxWidth >= 650)
               Row(
@@ -104,29 +103,10 @@ class _CatalogSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final NemoThemeData theme = NemoTheme.of(context);
-    return NemoSurface(
-      material: NemoMaterial.base,
-      tone: NemoSurfaceTone.surfaceVariant,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Semantics(
-            header: true,
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          SizedBox(height: theme.foundation.space8),
-          Text(
-            description,
-            style: TextStyle(color: theme.semantic.mutedForeground),
-          ),
-          SizedBox(height: theme.foundation.space16),
-          child,
-        ],
-      ),
+    return NemoSection(
+      heading: Text(title, style: Theme.of(context).textTheme.headlineSmall),
+      description: Text(description),
+      child: child,
     );
   }
 }
