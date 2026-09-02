@@ -121,6 +121,25 @@ NemoSwitch(
 See the [NemoSwitch playbook](doc/components/nemo-switch.md) for its API,
 accessibility contract, and token customization.
 
+## Field
+
+`NemoField` is the canonical recessed text-entry control. It keeps its label
+visible and preserves Flutter controller, focus, keyboard, change, and submit
+integration while adding explicit focus, error, disabled, and read-only cues:
+
+```dart
+NemoField(
+  label: 'Email address',
+  hintText: 'name@example.com',
+  controller: emailController,
+  textInputAction: TextInputAction.next,
+  onChanged: updateEmail,
+)
+```
+
+See the [NemoField playbook](doc/components/nemo-field.md) for its complete
+editing, accessibility, motion, and visual-state contract.
+
 ## Page composition
 
 `NemoPage` establishes a safe-area-aware base canvas and can compose a persistent
@@ -225,6 +244,7 @@ can use the committed
 - [NemoSurface playbook](doc/components/nemo-surface.md)
 - [NemoButton playbook](doc/components/nemo-button.md)
 - [NemoSwitch playbook](doc/components/nemo-switch.md)
+- [NemoField playbook](doc/components/nemo-field.md)
 - [Component playbook template](doc/components/_template.md)
 - [Foundation research](doc/research/flutter-design-system-foundation.md)
 - [Contributing](CONTRIBUTING.md)

@@ -19,3 +19,5 @@ in the same pull request as any intentional behavioral or visual change.
   grouping primitive.
 - [NemoButton](nemo-button.md) — accessible, token-driven primary action.
 - [NemoSwitch](nemo-switch.md) — accessible, controlled binary selection.
+- [NemoField](nemo-field.md) — accessible recessed text entry with persistent
+  labels and explicit editing states.

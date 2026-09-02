@@ -97,6 +97,32 @@ Widget switchPreview() => _FoundationPreview(
   ),
 );
 
+/// Native Flutter Widget Previewer definitions for NemoField states.
+@Preview(name: 'Field states', group: 'Components')
+Widget fieldPreview() => _FoundationPreview(
+  theme: NemoThemeData.light(),
+  child: const SizedBox(
+    width: 360,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        NemoField(
+          label: 'Display name',
+          hintText: 'Enter your name',
+          supportingText: 'Shown to other workspace members.',
+        ),
+        SizedBox(height: 24),
+        NemoField(
+          label: 'Email address',
+          errorText: 'Enter a valid email address.',
+        ),
+        SizedBox(height: 24),
+        NemoField(label: 'Account identifier', readOnly: true),
+      ],
+    ),
+  ),
+);
+
 /// Native Flutter Widget Previewer definition for the page composition grammar.
 @Preview(name: 'Page and section', group: 'Composition')
 Widget pageAndSectionPreview() => MaterialApp(
