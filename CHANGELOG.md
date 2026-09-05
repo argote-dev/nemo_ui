@@ -20,6 +20,10 @@
 
 ### Changed
 
+- Unify Button, Switch, and Surface around one interruptible composed visual
+  transition. Button interpolates a complete tactile state; Switch coordinates
+  track, thumb, relief, and indicator; Surface no longer animates static or
+  theme-driven mutations unless callers opt into `NemoSurfaceTransition`.
 - **Breaking:** `NemoComponentTokens` now requires a `topBar` value of type
   `NemoTopBarTokens` when constructed directly.
 

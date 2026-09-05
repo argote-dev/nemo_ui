@@ -12,7 +12,12 @@ import 'nemo_surface_renderer.dart';
 
 export '../foundation/nemo_material.dart';
 export '../foundation/nemo_surface_contract.dart'
-    show NemoSurfaceDepth, NemoSurfaceTone, NemoSurfaceShape, NemoSurfaceFinish;
+    show
+        NemoSurfaceDepth,
+        NemoSurfaceTone,
+        NemoSurfaceShape,
+        NemoSurfaceFinish,
+        NemoSurfaceTransition;
 
 /// A non-interactive, token-driven Nemo material composition primitive.
 ///
@@ -31,6 +36,7 @@ class NemoSurface extends StatefulWidget {
     this.clipBehavior = Clip.none,
     this.finish = NemoSurfaceFinish.standard,
     this.enableProgressiveRendering = false,
+    this.transition = NemoSurfaceTransition.none,
     super.key,
   }) : assert(
          finish != NemoSurfaceFinish.tactileGlass ||
@@ -75,6 +81,10 @@ class NemoSurface extends StatefulWidget {
   /// and does not expose shader assets, uniforms, or callbacks.
   final bool enableProgressiveRendering;
 
+  /// Explicit local visual transition. Defaults to [NemoSurfaceTransition.none]
+  /// so static cards and theme-driven mutations do not animate.
+  final NemoSurfaceTransition transition;
+
   NemoMaterial get _material =>
       material ??
       switch (depth ?? NemoSurfaceDepth.raised) {
@@ -91,20 +101,32 @@ class NemoSurface extends StatefulWidget {
 
 final class _NemoSurfaceState extends State<NemoSurface> {
   bool _requestedProgram = false;
+  bool _explicitChange = false;
+  bool _dependenciesChanged = false;
   bool _isTransitioning = false;
-  _SurfaceMaterialVisual? _lastTarget;
+  int _transitionGeneration = 0;
+  _SurfaceMaterialVisual? _from;
+  late _SurfaceMaterialVisual _to;
+  _SurfaceMaterialVisual? _displayed;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _dependenciesChanged = true;
     _loadFragmentProgramIfEligible();
   }
 
   @override
   void didUpdateWidget(covariant NemoSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.material != widget.material ||
+    _explicitChange =
+        oldWidget.material != widget.material ||
         oldWidget.depth != widget.depth ||
+        oldWidget.tone != widget.tone ||
+        oldWidget.finish != widget.finish ||
+        oldWidget.cornerRole != widget.cornerRole ||
+        oldWidget.shape != widget.shape;
+    if (_explicitChange ||
         oldWidget.enableProgressiveRendering !=
             widget.enableProgressiveRendering) {
       _loadFragmentProgramIfEligible();
@@ -136,7 +158,6 @@ final class _NemoSurfaceState extends State<NemoSurface> {
   @override
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
-    final NemoMotionTokens motion = theme.motion.resolveFor(context);
     final double radius = switch (widget.shape) {
       NemoSurfaceShape.roundedSmall => theme.foundation.radiusSmall,
       NemoSurfaceShape.roundedMedium => theme.foundation.radiusMedium,
@@ -158,6 +179,7 @@ final class _NemoSurfaceState extends State<NemoSurface> {
     final bool usesTactileGlass =
         widget.finish == NemoSurfaceFinish.tactileGlass &&
         widget._material == NemoMaterial.floating;
+    final NemoMotionTokens motion = theme.motion.resolveFor(context);
     final _SurfaceMaterialVisual target = _SurfaceMaterialVisual(
       highContrast && usesTactileGlass
           ? const NemoMaterialTokens.highContrast().floating
@@ -165,11 +187,7 @@ final class _NemoSurfaceState extends State<NemoSurface> {
       base,
       radius,
     );
-    if (_lastTarget case final _SurfaceMaterialVisual previous
-        when previous.differsFrom(target)) {
-      _isTransitioning = motion.standard != Duration.zero;
-    }
-    _lastTarget = target;
+    _prepareTransition(target, motion);
     final Widget paddedChild = Padding(
       padding: widget.padding ?? EdgeInsets.all(theme.foundation.space16),
       child: widget.child,
@@ -238,22 +256,74 @@ final class _NemoSurfaceState extends State<NemoSurface> {
             );
           },
         );
-    if (motion.standard == Duration.zero) {
+    if (!_isTransitioning) {
       return render(target, paddedChild);
     }
     return TweenAnimationBuilder<_SurfaceMaterialVisual>(
-      tween: _SurfaceMaterialVisualTween(end: target),
-      duration: motion.standard,
-      curve: motion.standardCurve,
+      key: ValueKey<int>(_transitionGeneration),
+      tween: _SurfaceMaterialVisualTween(begin: _from!, end: _to),
+      duration: _durationFor(motion),
+      curve: motion.decelerateCurve,
       child: paddedChild,
       onEnd: () {
-        if (_isTransitioning && mounted) {
+        if (mounted) {
           setState(() => _isTransitioning = false);
         }
       },
-      builder: (context, visual, child) => render(visual, child!),
+      builder:
+          (BuildContext context, _SurfaceMaterialVisual visual, Widget? child) {
+            _displayed = visual;
+            return render(visual, child!);
+          },
     );
   }
+
+  void _prepareTransition(
+    _SurfaceMaterialVisual target,
+    NemoMotionTokens motion,
+  ) {
+    final Duration duration = _durationFor(motion);
+    if (_explicitChange) {
+      if (duration > Duration.zero &&
+          _displayed != null &&
+          _displayed!.differsFrom(target)) {
+        _from = _displayed;
+        _to = target;
+        _isTransitioning = true;
+        _transitionGeneration += 1;
+      } else {
+        _isTransitioning = false;
+        _displayed = target;
+        _to = target;
+      }
+    } else if (_dependenciesChanged && _isTransitioning) {
+      _isTransitioning = false;
+      _displayed = target;
+      _to = target;
+    } else if (!_isTransitioning) {
+      _displayed = target;
+      _to = target;
+    }
+    _explicitChange = false;
+    _dependenciesChanged = false;
+  }
+
+  Duration _durationFor(NemoMotionTokens motion) => switch (widget.transition) {
+    NemoSurfaceTransition.none => Duration.zero,
+    NemoSurfaceTransition.local => motion.standard,
+    NemoSurfaceTransition.overlay => motion.emphasized,
+  };
+}
+
+final class _SurfaceMaterialVisualTween extends Tween<_SurfaceMaterialVisual> {
+  _SurfaceMaterialVisualTween({
+    required _SurfaceMaterialVisual super.begin,
+    required _SurfaceMaterialVisual super.end,
+  });
+
+  @override
+  _SurfaceMaterialVisual lerp(double t) =>
+      _SurfaceMaterialVisual.lerp(begin!, end!, t);
 }
 
 @immutable
@@ -265,16 +335,15 @@ final class _SurfaceMaterialVisual {
 
   bool differsFrom(_SurfaceMaterialVisual other) =>
       recipe != other.recipe || color != other.color || radius != other.radius;
-}
 
-final class _SurfaceMaterialVisualTween extends Tween<_SurfaceMaterialVisual> {
-  _SurfaceMaterialVisualTween({required _SurfaceMaterialVisual end})
-    : super(end: end);
-  @override
-  _SurfaceMaterialVisual lerp(double t) => _SurfaceMaterialVisual(
-    NemoMaterialRecipe.lerp(begin!.recipe, end!.recipe, t),
-    Color.lerp(begin!.color, end!.color, t)!,
-    begin!.radius + (end!.radius - begin!.radius) * t,
+  static _SurfaceMaterialVisual lerp(
+    _SurfaceMaterialVisual a,
+    _SurfaceMaterialVisual b,
+    double t,
+  ) => _SurfaceMaterialVisual(
+    NemoMaterialRecipe.lerp(a.recipe, b.recipe, t),
+    Color.lerp(a.color, b.color, t)!,
+    a.radius + (b.radius - a.radius) * t,
   );
 }
 

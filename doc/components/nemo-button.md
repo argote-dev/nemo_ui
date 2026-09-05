@@ -32,9 +32,12 @@ interaction recipes and motion; it has no literal illumination escape hatch.
 The merged semantic node exposes button/enabled/tap state; Enter, Space, mouse
 and touch share activation. It keeps a 48px target, supports RTL and text scale,
 and maintains post-overlay text contrast. Press/focus/loading/disabled evidence
-is never depth, color or motion alone. `motion.quick` animates the physical
-transition; reduced motion reaches its identical final state directly and uses a
-static loading affordance.
+is never depth, color or motion alone. One composed visual interpolates
+material, tone, outline, shadow, and content offset together. `motion.quick`
+with accelerate/decelerate covers press and release; `motion.instant` covers
+focus. Reduced motion reaches the identical final state directly and uses a
+static loading affordance. Rapid press/release is interruptible and converges
+on the current state.
 
 State matrix and canonical scenes cover light/dark/high contrast, rest/hover/
 press/focus/disabled/loading, keyboard, pointer/touch, reduced motion and

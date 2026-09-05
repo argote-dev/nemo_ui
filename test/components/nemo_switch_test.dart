@@ -225,6 +225,72 @@ void main() {
         expect(tester.binding.transientCallbackCount, 0);
       },
     );
+    testWidgets('rapid toggles converge on the latest value', (tester) async {
+      final ValueNotifier<bool> value = ValueNotifier<bool>(false);
+      addTearDown(value.dispose);
+      await tester.pumpWidget(
+        _host(
+          ValueListenableBuilder<bool>(
+            valueListenable: value,
+            builder: (_, bool current, _) => NemoSwitch(
+              value: current,
+              onChanged: (bool next) => value.value = next,
+              child: const Text('Interrupt'),
+            ),
+          ),
+        ),
+      );
+
+      value.value = true;
+      await tester.pump();
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      value.value = false;
+      await tester.pump();
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      value.value = true;
+      await tester.pump(NemoMotionTokens.standardTokens.standard);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('nemo-switch-indicator-on')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('nemo-switch-indicator-off')),
+        findsNothing,
+      );
+      expect(tester.binding.transientCallbackCount, 0);
+    });
+
+    testWidgets('rapid press and release converge on the current value', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          NemoSwitch(
+            value: false,
+            onChanged: (_) {},
+            child: const Text('Press'),
+          ),
+        ),
+      );
+      final Offset center = tester.getCenter(find.byType(NemoSwitch));
+      final TestGesture first = await tester.startGesture(center);
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      await first.up();
+      final TestGesture second = await tester.startGesture(center);
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      await second.up();
+      await tester.pump(NemoMotionTokens.standardTokens.quick);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey<String>('nemo-switch-indicator-off')),
+        findsOneWidget,
+      );
+      expect(tester.binding.transientCallbackCount, 0);
+    });
+
     testWidgets('renders focus, pressed, and disabled visual states', (
       tester,
     ) async {

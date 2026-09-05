@@ -14,16 +14,16 @@ final class NemoMotionTokens {
     required this.accelerateCurve,
   });
 
-  /// A duration for feedback that should be perceived as immediate.
+  /// A duration for focus rings and small indicator crossfades.
   final Duration instant;
 
-  /// A duration for hover, focus, and press feedback.
+  /// A duration for hover, press, and release feedback.
   final Duration quick;
 
-  /// A duration for ordinary state changes.
+  /// A duration for toggles and explicit local material changes.
   final Duration standard;
 
-  /// A duration for important but restrained state changes.
+  /// A duration for infrequent overlay or confirmation transitions.
   final Duration emphasized;
 
   /// The default curve for state changes.

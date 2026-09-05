@@ -284,6 +284,34 @@ void main() {
       expect(tester.takeException(), isA<FlutterError>());
     });
 
+    testWidgets('rapid press and release converge on the current rest state', (
+      WidgetTester tester,
+    ) async {
+      const Key contentKey = ValueKey<String>('interrupt-content');
+      await tester.pumpWidget(
+        _host(
+          NemoButton(
+            onPressed: () {},
+            child: const KeyedSubtree(key: contentKey, child: Text('Press')),
+          ),
+        ),
+      );
+      final double rest = tester.getTopLeft(find.byKey(contentKey)).dy;
+      final Offset center = tester.getCenter(find.text('Press'));
+
+      final TestGesture first = await tester.startGesture(center);
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      await first.up();
+      final TestGesture second = await tester.startGesture(center);
+      await tester.pump(NemoMotionTokens.standardTokens.instant);
+      await second.up();
+      await tester.pump(NemoMotionTokens.standardTokens.quick);
+      await tester.pumpAndSettle();
+
+      expect(tester.getTopLeft(find.byKey(contentKey)).dy, rest);
+      expect(tester.binding.transientCallbackCount, 0);
+    });
+
     testWidgets(
       'pressed content moves at most one pixel and reduced motion resolves directly',
       (WidgetTester tester) async {
