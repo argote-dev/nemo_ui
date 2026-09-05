@@ -64,8 +64,8 @@ without a separate desktop treatment.
 
 Use **Composition / Page and section** in
 `example/previews/foundation_previews.dart`. The catalog settings composition
-uses `NemoSection` in `CatalogHomePage`; the dashboard composition uses it in
-`ComposedCatalogPage`.
+uses `NemoSection` in `CatalogHomePage`; the dashboard and settings compositions
+use it in `WorkDashboardPage` and `SettingsFlowPage`.
 
 ## Test matrix
 

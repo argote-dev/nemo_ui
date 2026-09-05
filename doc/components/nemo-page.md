@@ -74,8 +74,7 @@ caller-owned.
 
 Use the native Flutter Widget Previewer **Composition / Page and section**
 scenario in `example/previews/foundation_previews.dart`. The example catalog
-routes are **Nemo component catalog** (settings composition) and **Composed
-workspace** (dashboard composition) in `example/lib/src/pages/`.
+routes are **Settings** and **Work dashboard** in `example/lib/src/pages/`.
 
 ## Test matrix
 
@@ -89,9 +88,12 @@ nested public `NemoSurface`. Example coverage is in
 Canonical dashboard/settings goldens live in
 `test/components/nemo_page_golden_test.dart`: 800×600 physical pixels,
 Android, DPR 1, English, Ahem, no text scaling, and disabled animations across
-light, dark, and high contrast. Scenes are glyph-free. Baselines are generated
-and reviewed on canonical Ubuntu CI, never manufactured on macOS; intentional
-PNG updates require tracked image review and before/after PR evidence.
+light, dark, and high contrast. Composed program scenes, including the catalog
+inspector overlay, live in
+`test/components/nemo_canonical_scenes_golden_test.dart`. Scenes are glyph-free.
+Baselines are generated and reviewed on canonical Ubuntu CI, never manufactured
+on macOS; intentional PNG updates require tracked image review and before/after
+PR evidence.
 
 ## Decisions and known constraints
 

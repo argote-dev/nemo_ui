@@ -59,7 +59,9 @@ Deterministic component goldens are blocking checks. Verify them locally with:
 fvm flutter test \
   test/components/nemo_button_test.dart \
   test/components/nemo_surface_golden_test.dart \
-  test/components/nemo_switch_test.dart
+  test/components/nemo_switch_test.dart \
+  test/components/nemo_page_golden_test.dart \
+  test/components/nemo_canonical_scenes_golden_test.dart
 ```
 
 Only update a baseline when the visual contract intentionally changes:
