@@ -48,3 +48,20 @@ enum NemoSurfaceFinish {
   /// A bounded, high-opacity local glass treatment for floating overlays.
   tactileGlass,
 }
+
+/// Opt-in visual transition for an explicit local [NemoSurface] change.
+///
+/// Static cards and theme-driven mutations stay still. Callers request a
+/// transition only for a prominent local material change or an infrequent
+/// overlay confirmation.
+enum NemoSurfaceTransition {
+  /// Paint the resolved material immediately. The default for static cards.
+  none,
+
+  /// Animate an explicit local material change with [NemoMotionTokens.standard].
+  local,
+
+  /// Animate an infrequent overlay or confirmation with
+  /// [NemoMotionTokens.emphasized].
+  overlay,
+}

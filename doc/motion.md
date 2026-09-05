@@ -8,10 +8,10 @@ only signal for a state change.
 
 Components consume semantic tokens rather than literal durations:
 
-- **instant** — immediate visual acknowledgement;
-- **quick** — hover, focus, and press feedback;
-- **standard** — selection and ordinary state transitions;
-- **emphasized** — infrequent, important transitions.
+- **instant** — focus rings and small indicator crossfades;
+- **quick** — hover, press, and release feedback;
+- **standard** — toggles and explicit local material changes;
+- **emphasized** — infrequent overlay or confirmation transitions.
 
 The theme also provides standard, accelerate, and decelerate curves. Exact
 values belong to the theme and may evolve without changing component code.
@@ -20,7 +20,7 @@ values belong to the theme and may evolve without changing component code.
 
 | Interaction | Visual response | Constraint |
 | --- | --- | --- |
-| Press | Compress the surface by roughly 1–2 logical pixels and modestly change depth or tonal fill. | Never move surrounding layout. |
+| Press | Compress the surface by at most one logical pixel and modestly change depth or tonal fill. | Never move surrounding layout. |
 | Hover | Adjust depth or tonal stroke subtly. | Hover is supplemental and cannot hide focus. |
 | Focus | Show a crisp, high-contrast focus ring. | Must remain visible without animation or color alone. |
 | Select or toggle | Crossfade or move a state indicator while changing semantics. | Final state must remain unambiguous and static. |

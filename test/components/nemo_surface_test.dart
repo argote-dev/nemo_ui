@@ -102,6 +102,133 @@ void main() {
     expect(tester.takeException(), isA<FlutterError>());
   });
 
+  testWidgets('static surfaces do not animate material mutations', (
+    tester,
+  ) async {
+    final ValueNotifier<NemoMaterial> material = ValueNotifier<NemoMaterial>(
+      NemoMaterial.raised,
+    );
+    addTearDown(material.dispose);
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        ValueListenableBuilder<NemoMaterial>(
+          valueListenable: material,
+          builder: (_, NemoMaterial value, _) => NemoSurface(
+            key: const ValueKey<String>('static-surface'),
+            material: value,
+            child: const Text('Material'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.binding.transientCallbackCount, 0);
+
+    material.value = NemoMaterial.recessed;
+    await tester.pump();
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(find.text('Material'), findsOneWidget);
+  });
+
+  testWidgets('explicit local material changes use standard motion', (
+    tester,
+  ) async {
+    final ValueNotifier<NemoMaterial> material = ValueNotifier<NemoMaterial>(
+      NemoMaterial.raised,
+    );
+    addTearDown(material.dispose);
+
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        ValueListenableBuilder<NemoMaterial>(
+          valueListenable: material,
+          builder: (_, NemoMaterial value, _) => NemoSurface(
+            material: value,
+            transition: NemoSurfaceTransition.local,
+            child: const Text('Local'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.binding.transientCallbackCount, 0);
+
+    material.value = NemoMaterial.floating;
+    await tester.pump();
+    expect(tester.binding.transientCallbackCount, greaterThan(0));
+
+    await tester.pump(NemoMotionTokens.standardTokens.standard);
+    await tester.pumpAndSettle();
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(find.text('Local'), findsOneWidget);
+  });
+
+  testWidgets('overlay transitions keep moving after standard motion', (
+    tester,
+  ) async {
+    final ValueNotifier<NemoMaterial> material = ValueNotifier<NemoMaterial>(
+      NemoMaterial.raised,
+    );
+    addTearDown(material.dispose);
+
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        ValueListenableBuilder<NemoMaterial>(
+          valueListenable: material,
+          builder: (_, NemoMaterial value, _) => NemoSurface(
+            material: value,
+            transition: NemoSurfaceTransition.overlay,
+            child: const Text('Overlay'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    material.value = NemoMaterial.floating;
+    await tester.pump();
+    await tester.pump(NemoMotionTokens.standardTokens.standard);
+    expect(tester.binding.transientCallbackCount, greaterThan(0));
+
+    await tester.pump(NemoMotionTokens.standardTokens.emphasized);
+    await tester.pumpAndSettle();
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(find.text('Overlay'), findsOneWidget);
+  });
+
+  testWidgets('reduced motion skips explicit local surface transitions', (
+    tester,
+  ) async {
+    final ValueNotifier<NemoMaterial> material = ValueNotifier<NemoMaterial>(
+      NemoMaterial.raised,
+    );
+    addTearDown(material.dispose);
+
+    await tester.pumpWidget(
+      _host(
+        NemoThemeData.light(),
+        ValueListenableBuilder<NemoMaterial>(
+          valueListenable: material,
+          builder: (_, NemoMaterial value, _) => NemoSurface(
+            material: value,
+            transition: NemoSurfaceTransition.local,
+            child: const Text('Reduced'),
+          ),
+        ),
+        disableAnimations: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    material.value = NemoMaterial.recessed;
+    await tester.pump();
+    expect(tester.binding.transientCallbackCount, 0);
+    expect(find.text('Reduced'), findsOneWidget);
+  });
+
   testWidgets('reduced motion resolves material changes immediately', (
     tester,
   ) async {
@@ -282,9 +409,9 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
 
-    expect(selections.last.isEnabled, isFalse);
+    expect(selections.last.isEnabled, isTrue);
     expect(find.bySemanticsLabel('Theme transition content'), findsOneWidget);
   });
 

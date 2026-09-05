@@ -36,8 +36,17 @@ NemoSurface(
 
 The four materials are `recessed` (receiving area), `base` (canvas), `raised`
 (action/group plane), and `floating` (transient/prominent plane). Defaults are
-raised/panel/surface, `space16` padding, and `Clip.none`. One composition has
-one dominant base canvas and at most one local material jump.
+raised/panel/surface, `space16` padding, `Clip.none`, and
+`NemoSurfaceTransition.none`. One composition has one dominant base canvas and
+at most one local material jump.
+
+```dart
+NemoSurface(
+  material: NemoMaterial.floating,
+  transition: NemoSurfaceTransition.overlay,
+  child: const Text('Confirmation'),
+)
+```
 
 `enableProgressiveRendering` is experimental and defaults to `false`. It may be
 set to `true` only for an eligible large, static raised/floating surface after
@@ -63,7 +72,8 @@ opt-out. Each remains Canvas-rendered with unchanged layout and semantics.
 - `semantic`: surface colors, highlight/lowlight shadows, outline, and focus
   ring color.
 - `components`: outline and focus-ring widths.
-- `motion`: `standard` duration and curve.
+- `motion`: `standard` for explicit local changes and `emphasized` for
+  infrequent overlay transitions. Static cards use no motion token.
 
 The internal optional finish uses one bounded private recipe for rim strength,
 ambient occlusion, grain opacity, size, radius, base color, and the same fixed
@@ -87,9 +97,12 @@ must meet target-size requirements for interactive descendants.
 
 ## Motion
 
-Material changes use `motion.standard` and `motion.standardCurve`. With
+Static cards and theme-driven mutations paint immediately. Callers opt into
+`NemoSurfaceTransition.local` (`motion.standard` + decelerate) for an explicit
+local material change, or `NemoSurfaceTransition.overlay` (`motion.emphasized`
++ decelerate) for an infrequent overlay or confirmation. With
 `MediaQuery.disableAnimations`, the same final Canvas material renders
-immediately. During material transitions the fragment finish is not selected,
+immediately. During an explicit transition the fragment finish is not selected,
 so reduced motion cannot introduce decorative animation.
 
 ## Responsive behavior
@@ -114,10 +127,11 @@ command palette without making it a persistent-surface default.
 ## Test matrix
 
 - **Unit/widget:** `test/components/nemo_surface_test.dart` covers v1 migration
-  mapping, all materials, clipping, layout, RTL/text scaling, reduced motion,
-  named descendant semantics, Canvas fallback selection, high contrast, and
-  explicit opt-out, plus tactile-glass eligibility, forced fallback, platform
-  high contrast, and reduced motion.
+  mapping, all materials, clipping, layout, RTL/text scaling, static default
+  motion, explicit local/overlay transitions, reduced motion, named descendant
+  semantics, Canvas fallback selection, high contrast, and explicit opt-out,
+  plus tactile-glass eligibility, forced fallback, platform high contrast, and
+  reduced motion.
 - **Semantics/interactions:** surface preserves caller-owned semantics and hit
   testing; it has no interaction, localization, or focus role of its own.
 - **Preview:** the native **Components / Surface depths** scenario covers the

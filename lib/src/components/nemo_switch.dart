@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../foundation/nemo_illumination.dart';
 import '../foundation/nemo_localizations.dart';
 import '../foundation/nemo_material.dart';
+import '../foundation/nemo_motion.dart';
 import '../foundation/nemo_theme.dart';
 import '../foundation/nemo_theme_data.dart';
 
@@ -50,6 +51,11 @@ class _NemoSwitchState extends State<NemoSwitch> {
   bool _hovered = false;
   bool _focused = false;
   bool _pressed = false;
+  bool? _lastValue;
+  bool _lastHovered = false;
+  bool _lastFocused = false;
+  bool _lastPressed = false;
+  ({Duration duration, Curve curve})? _activeMotion;
 
   bool get _enabled => widget.onChanged != null;
 
@@ -77,8 +83,8 @@ class _NemoSwitchState extends State<NemoSwitch> {
   Widget build(BuildContext context) {
     final NemoThemeData theme = NemoTheme.of(context);
     final NemoSwitchTokens tokens = theme.components.switchControl;
+    final NemoMotionTokens motion = theme.motion.resolveFor(context);
     final bool enabled = _enabled;
-    final Duration duration = theme.motion.resolveFor(context).quick;
     final NemoSwitchStateStyle stateStyle = widget.value
         ? tokens.on
         : tokens.off;
@@ -132,110 +138,12 @@ class _NemoSwitchState extends State<NemoSwitch> {
                             : ExcludeSemantics(child: widget.child),
                       ),
                       SizedBox(width: theme.foundation.space12),
-                      TweenAnimationBuilder<NemoSwitchStateStyle>(
-                        tween: _NemoSwitchStyleTween(end: stateStyle),
-                        duration: duration,
-                        curve: theme.motion.standardCurve,
-                        builder:
-                            (
-                              BuildContext context,
-                              NemoSwitchStateStyle style,
-                              Widget? child,
-                            ) {
-                              final double interactionBlend = _pressed
-                                  ? .12
-                                  : _hovered || _focused
-                                  ? .06
-                                  : 0;
-                              final Color track = Color.lerp(
-                                Color.lerp(
-                                  theme.semantic.surfaceVariant,
-                                  theme.semantic.primary,
-                                  style.trackPrimaryBlend,
-                                )!,
-                                theme.semantic.foreground,
-                                interactionBlend,
-                              )!;
-                              final Color thumb = Color.lerp(
-                                Color.lerp(
-                                  theme.semantic.surface,
-                                  theme.semantic.primary,
-                                  style.thumbPrimaryBlend,
-                                )!,
-                                theme.semantic.foreground,
-                                interactionBlend / 2,
-                              )!;
-                              return CustomPaint(
-                                key: const ValueKey<String>(
-                                  'nemo-switch-track',
-                                ),
-                                painter: _NemoSwitchTrackPainter(
-                                  theme: theme,
-                                  style: style,
-                                  recipe: theme.interactions.recipeFor(
-                                    !_enabled
-                                        ? NemoInteractionState.disabled
-                                        : _pressed
-                                        ? NemoInteractionState.pressed
-                                        : widget.value
-                                        ? NemoInteractionState.selected
-                                        : _focused
-                                        ? NemoInteractionState.focused
-                                        : _hovered
-                                        ? NemoInteractionState.hovered
-                                        : NemoInteractionState.resting,
-                                  ),
-                                  color: track,
-                                  focused: _focused,
-                                  enabled: enabled,
-                                ),
-                                child: SizedBox(
-                                  width: tokens.trackWidth,
-                                  height: tokens.trackHeight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: AnimatedAlign(
-                                      duration: duration,
-                                      curve: theme.motion.standardCurve,
-                                      alignment: widget.value
-                                          ? AlignmentDirectional.centerEnd
-                                          : AlignmentDirectional.centerStart,
-                                      child: CustomPaint(
-                                        painter: _NemoSwitchThumbPainter(
-                                          theme: theme,
-                                          style: style,
-                                          recipe: theme.interactions.recipeFor(
-                                            _pressed
-                                                ? NemoInteractionState.pressed
-                                                : NemoInteractionState.resting,
-                                          ),
-                                          color: thumb,
-                                          enabled: enabled,
-                                        ),
-                                        child: SizedBox(
-                                          width: tokens.thumbDiameter,
-                                          height: tokens.thumbDiameter,
-                                          child: CustomPaint(
-                                            key: ValueKey<String>(
-                                              widget.value
-                                                  ? 'nemo-switch-indicator-on'
-                                                  : 'nemo-switch-indicator-off',
-                                            ),
-                                            painter:
-                                                _NemoSwitchIndicatorPainter(
-                                                  checked: widget.value,
-                                                  color: widget.value
-                                                      ? theme.semantic.onPrimary
-                                                      : theme.semantic.primary,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                      _buildVisual(
+                        theme: theme,
+                        tokens: tokens,
+                        motion: motion,
+                        style: stateStyle,
+                        enabled: enabled,
                       ),
                     ],
                   ),
@@ -247,14 +155,244 @@ class _NemoSwitchState extends State<NemoSwitch> {
       ),
     );
   }
+
+  Widget _buildVisual({
+    required NemoThemeData theme,
+    required NemoSwitchTokens tokens,
+    required NemoMotionTokens motion,
+    required NemoSwitchStateStyle style,
+    required bool enabled,
+  }) {
+    final NemoInteractionState trackState = !enabled
+        ? NemoInteractionState.disabled
+        : _pressed
+        ? NemoInteractionState.pressed
+        : widget.value
+        ? NemoInteractionState.selected
+        : _focused
+        ? NemoInteractionState.focused
+        : _hovered
+        ? NemoInteractionState.hovered
+        : NemoInteractionState.resting;
+    final NemoInteractionRecipe trackRecipe = theme.interactions.recipeFor(
+      trackState,
+    );
+    final NemoInteractionRecipe thumbRecipe = theme.interactions.recipeFor(
+      _pressed ? NemoInteractionState.pressed : NemoInteractionState.resting,
+    );
+    final _NemoSwitchVisual target = _NemoSwitchVisual(
+      style: style,
+      trackRecipe: trackRecipe,
+      thumbRecipe: thumbRecipe,
+      trackMaterial: theme.materials.recipeFor(trackRecipe.material),
+      thumbMaterial: theme.materials.recipeFor(thumbRecipe.material),
+      thumbT: widget.value ? 1 : 0,
+      indicatorT: widget.value ? 1 : 0,
+      indicatorColor: widget.value
+          ? theme.semantic.onPrimary
+          : theme.semantic.primary,
+    );
+    final ({Duration duration, Curve curve}) spec = _lockMotion(motion);
+    Widget paint(_NemoSwitchVisual visual) {
+      final double interactionBlend = _pressed
+          ? .12
+          : _hovered || _focused
+          ? .06
+          : 0;
+      final Color liveTrack = Color.lerp(
+        Color.lerp(
+          theme.semantic.surfaceVariant,
+          theme.semantic.primary,
+          visual.style.trackPrimaryBlend,
+        )!,
+        theme.semantic.foreground,
+        interactionBlend,
+      )!;
+      final Color liveThumb = Color.lerp(
+        Color.lerp(
+          theme.semantic.surface,
+          theme.semantic.primary,
+          visual.style.thumbPrimaryBlend,
+        )!,
+        theme.semantic.foreground,
+        interactionBlend / 2,
+      )!;
+      return CustomPaint(
+        key: const ValueKey<String>('nemo-switch-track'),
+        painter: _NemoSwitchTrackPainter(
+          theme: theme,
+          style: visual.style,
+          recipe: visual.trackRecipe,
+          material: visual.trackMaterial,
+          color: liveTrack,
+          focused: _focused,
+          enabled: enabled,
+        ),
+        child: SizedBox(
+          width: tokens.trackWidth,
+          height: tokens.trackHeight,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Align(
+              alignment: AlignmentDirectional.lerp(
+                AlignmentDirectional.centerStart,
+                AlignmentDirectional.centerEnd,
+                visual.thumbT,
+              )!,
+              child: CustomPaint(
+                painter: _NemoSwitchThumbPainter(
+                  theme: theme,
+                  style: visual.style,
+                  recipe: visual.thumbRecipe,
+                  material: visual.thumbMaterial,
+                  color: liveThumb,
+                  enabled: enabled,
+                ),
+                child: SizedBox(
+                  width: tokens.thumbDiameter,
+                  height: tokens.thumbDiameter,
+                  child: CustomPaint(
+                    key: ValueKey<String>(
+                      widget.value
+                          ? 'nemo-switch-indicator-on'
+                          : 'nemo-switch-indicator-off',
+                    ),
+                    painter: _NemoSwitchIndicatorPainter(
+                      progress: visual.indicatorT,
+                      color: visual.indicatorColor,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (motion.instant == Duration.zero &&
+        motion.quick == Duration.zero &&
+        motion.standard == Duration.zero) {
+      return paint(target);
+    }
+    return TweenAnimationBuilder<_NemoSwitchVisual>(
+      tween: _NemoSwitchVisualTween(end: target),
+      duration: spec.duration,
+      curve: spec.curve,
+      builder: (
+        BuildContext context,
+        _NemoSwitchVisual visual,
+        Widget? child,
+      ) => paint(visual),
+    );
+  }
+
+  ({Duration duration, Curve curve}) _lockMotion(NemoMotionTokens motion) {
+    final bool stateChanged =
+        _lastValue != widget.value ||
+        _lastHovered != _hovered ||
+        _lastFocused != _focused ||
+        _lastPressed != _pressed;
+    if (stateChanged || _activeMotion == null) {
+      _activeMotion = _motionFor(motion);
+      _lastValue = widget.value;
+      _lastHovered = _hovered;
+      _lastFocused = _focused;
+      _lastPressed = _pressed;
+    }
+    return _activeMotion!;
+  }
+
+  ({Duration duration, Curve curve}) _motionFor(NemoMotionTokens motion) {
+    if (_lastValue != null && _lastValue != widget.value) {
+      return (duration: motion.standard, curve: motion.decelerateCurve);
+    }
+    if (_pressed && !_lastPressed) {
+      return (duration: motion.quick, curve: motion.accelerateCurve);
+    }
+    if (!_pressed && _lastPressed) {
+      return (duration: motion.quick, curve: motion.decelerateCurve);
+    }
+    if (_hovered != _lastHovered) {
+      return (duration: motion.quick, curve: motion.decelerateCurve);
+    }
+    if (_focused != _lastFocused) {
+      return (duration: motion.instant, curve: motion.decelerateCurve);
+    }
+    if (_lastValue == null) {
+      return (duration: Duration.zero, curve: motion.standardCurve);
+    }
+    return (duration: motion.standard, curve: motion.standardCurve);
+  }
 }
 
-final class _NemoSwitchStyleTween extends Tween<NemoSwitchStateStyle> {
-  _NemoSwitchStyleTween({required NemoSwitchStateStyle end}) : super(end: end);
+@immutable
+final class _NemoSwitchVisual {
+  const _NemoSwitchVisual({
+    required this.style,
+    required this.trackRecipe,
+    required this.thumbRecipe,
+    required this.trackMaterial,
+    required this.thumbMaterial,
+    required this.thumbT,
+    required this.indicatorT,
+    required this.indicatorColor,
+  });
+
+  final NemoSwitchStateStyle style;
+  final NemoInteractionRecipe trackRecipe;
+  final NemoInteractionRecipe thumbRecipe;
+  final NemoMaterialRecipe trackMaterial;
+  final NemoMaterialRecipe thumbMaterial;
+  final double thumbT;
+  final double indicatorT;
+  final Color indicatorColor;
+
+  static _NemoSwitchVisual lerp(
+    _NemoSwitchVisual a,
+    _NemoSwitchVisual b,
+    double t,
+  ) => _NemoSwitchVisual(
+    style: NemoSwitchStateStyle.lerp(a.style, b.style, t),
+    trackRecipe: NemoInteractionRecipe.lerp(a.trackRecipe, b.trackRecipe, t),
+    thumbRecipe: NemoInteractionRecipe.lerp(a.thumbRecipe, b.thumbRecipe, t),
+    trackMaterial: NemoMaterialRecipe.lerp(a.trackMaterial, b.trackMaterial, t),
+    thumbMaterial: NemoMaterialRecipe.lerp(a.thumbMaterial, b.thumbMaterial, t),
+    thumbT: a.thumbT + (b.thumbT - a.thumbT) * t,
+    indicatorT: a.indicatorT + (b.indicatorT - a.indicatorT) * t,
+    indicatorColor: Color.lerp(a.indicatorColor, b.indicatorColor, t)!,
+  );
 
   @override
-  NemoSwitchStateStyle lerp(double t) =>
-      NemoSwitchStateStyle.lerp(begin!, end!, t);
+  bool operator ==(Object other) =>
+      other is _NemoSwitchVisual &&
+      style == other.style &&
+      trackRecipe == other.trackRecipe &&
+      thumbRecipe == other.thumbRecipe &&
+      trackMaterial == other.trackMaterial &&
+      thumbMaterial == other.thumbMaterial &&
+      thumbT == other.thumbT &&
+      indicatorT == other.indicatorT &&
+      indicatorColor == other.indicatorColor;
+
+  @override
+  int get hashCode => Object.hash(
+    style,
+    trackRecipe,
+    thumbRecipe,
+    trackMaterial,
+    thumbMaterial,
+    thumbT,
+    indicatorT,
+    indicatorColor,
+  );
+}
+
+final class _NemoSwitchVisualTween extends Tween<_NemoSwitchVisual> {
+  _NemoSwitchVisualTween({required _NemoSwitchVisual end}) : super(end: end);
+
+  @override
+  _NemoSwitchVisual lerp(double t) => _NemoSwitchVisual.lerp(begin!, end!, t);
 }
 
 class _NemoSwitchTrackPainter extends CustomPainter {
@@ -262,6 +400,7 @@ class _NemoSwitchTrackPainter extends CustomPainter {
     required this.theme,
     required this.style,
     required this.recipe,
+    required this.material,
     required this.color,
     required this.focused,
     required this.enabled,
@@ -269,6 +408,7 @@ class _NemoSwitchTrackPainter extends CustomPainter {
   final NemoThemeData theme;
   final NemoSwitchStateStyle style;
   final NemoInteractionRecipe recipe;
+  final NemoMaterialRecipe material;
   final Color color;
   final bool focused;
   final bool enabled;
@@ -277,7 +417,7 @@ class _NemoSwitchTrackPainter extends CustomPainter {
     canvas,
     size,
     theme: theme,
-    recipe: theme.materials.recipeFor(recipe.material),
+    recipe: material,
     baseColor: color,
     radius: size.height / 2,
     focused: focused,
@@ -287,6 +427,7 @@ class _NemoSwitchTrackPainter extends CustomPainter {
       theme != old.theme ||
       style != old.style ||
       recipe != old.recipe ||
+      material != old.material ||
       color != old.color ||
       focused != old.focused ||
       enabled != old.enabled;
@@ -297,12 +438,14 @@ class _NemoSwitchThumbPainter extends CustomPainter {
     required this.theme,
     required this.style,
     required this.recipe,
+    required this.material,
     required this.color,
     required this.enabled,
   });
   final NemoThemeData theme;
   final NemoSwitchStateStyle style;
   final NemoInteractionRecipe recipe;
+  final NemoMaterialRecipe material;
   final Color color;
   final bool enabled;
   @override
@@ -310,7 +453,7 @@ class _NemoSwitchThumbPainter extends CustomPainter {
     canvas,
     size,
     theme: theme,
-    recipe: theme.materials.recipeFor(recipe.material),
+    recipe: material,
     baseColor: color,
     radius: size.shortestSide / 2,
   );
@@ -319,40 +462,56 @@ class _NemoSwitchThumbPainter extends CustomPainter {
       theme != old.theme ||
       style != old.style ||
       recipe != old.recipe ||
+      material != old.material ||
       color != old.color ||
       enabled != old.enabled;
 }
 
 class _NemoSwitchIndicatorPainter extends CustomPainter {
   const _NemoSwitchIndicatorPainter({
-    required this.checked,
+    required this.progress,
     required this.color,
   });
 
-  final bool checked;
+  final double progress;
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final Offset center = size.center(Offset.zero);
     final Paint paint = Paint()
       ..color = color
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.square
       ..isAntiAlias = false;
-    final Offset center = size.center(Offset.zero);
-    if (!checked) {
+    if (progress <= 0) {
       canvas.drawLine(center.translate(-4, 0), center.translate(4, 0), paint);
       return;
     }
-    final Path check = Path()
-      ..moveTo(center.dx - 5, center.dy)
-      ..lineTo(center.dx - 1, center.dy + 4)
-      ..lineTo(center.dx + 5, center.dy - 4);
-    canvas.drawPath(check, paint);
+    if (progress >= 1) {
+      canvas.drawPath(
+        Path()
+          ..moveTo(center.dx - 5, center.dy)
+          ..lineTo(center.dx - 1, center.dy + 4)
+          ..lineTo(center.dx + 5, center.dy - 4),
+        paint,
+      );
+      return;
+    }
+    paint.color = color.withValues(alpha: color.a * (1 - progress));
+    canvas.drawLine(center.translate(-4, 0), center.translate(4, 0), paint);
+    paint.color = color.withValues(alpha: color.a * progress);
+    canvas.drawPath(
+      Path()
+        ..moveTo(center.dx - 5, center.dy)
+        ..lineTo(center.dx - 1, center.dy + 4)
+        ..lineTo(center.dx + 5, center.dy - 4),
+      paint,
+    );
   }
 
   @override
   bool shouldRepaint(covariant _NemoSwitchIndicatorPainter oldDelegate) =>
-      checked != oldDelegate.checked || color != oldDelegate.color;
+      progress != oldDelegate.progress || color != oldDelegate.color;
 }

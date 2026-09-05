@@ -30,8 +30,13 @@ focus. No component-local literal illumination is permitted.
 
 The merged node exposes toggled/enabled/value/tap semantics. Touch, mouse,
 Enter and Space request the opposite value; 48px targets, RTL alignment, text
-scale and keyboard traversal are supported. `motion.quick` resolves track/thumb
-and interaction recipes; reduced motion paints the final state directly.
+scale and keyboard traversal are supported. One composed visual interpolates
+track, thumb, relief, and the check/minus indicator together. `motion.standard`
+resolves toggles; `motion.quick` covers hover/press geometry; `motion.instant`
+covers focus. Hover, press, and focus tone is immediate acknowledgement so the
+state-matrix golden remains the settled recipe. Reduced motion paints the final
+state directly. Rapid toggles and press/release are interruptible and converge
+on the latest value.
 
 The state matrix and canonical light/dark/high-contrast scenes cover off/on,
 hover/press/focus/disabled, pointer/touch/keyboard, localization, RTL, contrast
