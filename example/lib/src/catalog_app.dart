@@ -41,7 +41,12 @@ class _CatalogAppState extends State<CatalogApp> {
               disableAnimations: _settings.reducedMotion,
               textScaler: TextScaler.linear(_settings.textScale),
             ),
-            child: child!,
+            child: Directionality(
+              textDirection: _settings.rtl
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              child: child!,
+            ),
           ),
         );
       },
@@ -62,6 +67,7 @@ class CatalogSettings {
     this.highContrast = false,
     this.spanish = false,
     this.reducedMotion = false,
+    this.rtl = false,
     this.textScale = 1,
     this.seed = const Color(0xFF4F6EF7),
   });
@@ -77,6 +83,9 @@ class CatalogSettings {
 
   /// Whether motion should be disabled for the preview.
   final bool reducedMotion;
+
+  /// Whether the catalog should preview right-to-left geometry.
+  final bool rtl;
 
   /// The host text scale used by the preview.
   final double textScale;
@@ -97,6 +106,7 @@ class CatalogSettings {
     bool? highContrast,
     bool? spanish,
     bool? reducedMotion,
+    bool? rtl,
     double? textScale,
     Color? seed,
   }) => CatalogSettings(
@@ -104,6 +114,7 @@ class CatalogSettings {
     highContrast: highContrast ?? this.highContrast,
     spanish: spanish ?? this.spanish,
     reducedMotion: reducedMotion ?? this.reducedMotion,
+    rtl: rtl ?? this.rtl,
     textScale: textScale ?? this.textScale,
     seed: seed ?? this.seed,
   );

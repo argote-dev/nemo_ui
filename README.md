@@ -224,6 +224,12 @@ cd example
 fvm flutter run -d chrome
 ```
 
+The catalog landing page includes three canonical conformance scenes: work
+dashboard, settings, and catalog inspector. They are the composed evidence for
+page grammar, recessed input, overlays, and renderer adoption. Canvas remains
+the default; fragment and tactile glass stay experimental or opt-in until device
+profile evidence exists.
+
 Run native Flutter Widget Previewer from the repository root:
 
 ```sh

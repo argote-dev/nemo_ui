@@ -3,10 +3,12 @@ import 'package:nemo_ui/nemo_ui.dart';
 
 import '../catalog_app.dart';
 import 'button_catalog_page.dart';
-import 'composed_catalog_page.dart';
+import 'catalog_inspector_page.dart';
 import 'field_catalog_page.dart';
+import 'settings_flow_page.dart';
 import 'surface_catalog_page.dart';
 import 'switch_catalog_page.dart';
+import 'work_dashboard_page.dart';
 
 /// The catalog landing page: global settings and Nemo-owned destinations.
 class CatalogHomePage extends StatelessWidget {
@@ -34,9 +36,34 @@ class CatalogHomePage extends StatelessWidget {
         onChanged: onSettingsChanged,
       ),
     );
+    final Widget scenes = _CatalogSection(
+      title: 'Canonical scenes',
+      description:
+          'Judge hierarchy, input, and overlays in realistic compositions.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: const <Widget>[
+          _ComponentDestination(
+            title: 'Work dashboard',
+            subtitle: 'Canvas, recessed inbox, and restrained actions',
+            page: WorkDashboardPage(),
+          ),
+          _ComponentDestination(
+            title: 'Settings',
+            subtitle: 'Page grammar, recessed field, and one action island',
+            page: SettingsFlowPage(),
+          ),
+          _ComponentDestination(
+            title: 'Catalog inspector',
+            subtitle: 'State matrices, renderer comparison, and overlay',
+            page: CatalogInspectorPage(),
+          ),
+        ],
+      ),
+    );
     final Widget menu = _CatalogSection(
       title: 'Explore Nemo',
-      description: 'Open focused component references or a composed workflow.',
+      description: 'Open focused component references.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: const <Widget>[
@@ -60,11 +87,6 @@ class CatalogHomePage extends StatelessWidget {
             subtitle: 'Accessible recessed text entry',
             page: FieldCatalogPage(),
           ),
-          _ComponentDestination(
-            title: 'Composed workspace',
-            subtitle: 'A shared surface, action, and preference flow',
-            page: ComposedCatalogPage(),
-          ),
         ],
       ),
     );
@@ -81,11 +103,21 @@ class CatalogHomePage extends StatelessWidget {
                 children: <Widget>[
                   Expanded(child: configuration),
                   SizedBox(width: theme.foundation.space24),
-                  Expanded(child: menu),
+                  Expanded(
+                    child: Column(
+                      children: <Widget>[
+                        scenes,
+                        SizedBox(height: theme.foundation.space24),
+                        menu,
+                      ],
+                    ),
+                  ),
                 ],
               )
             else ...<Widget>[
               configuration,
+              SizedBox(height: theme.foundation.space24),
+              scenes,
               SizedBox(height: theme.foundation.space24),
               menu,
             ],
@@ -170,6 +202,12 @@ class _GlobalConfiguration extends StatelessWidget {
           onChanged: (bool value) =>
               onChanged(settings.copyWith(reducedMotion: value)),
           child: const Text('Reduced motion'),
+        ),
+        NemoSwitch(
+          value: settings.rtl,
+          semanticLabel: 'Right to left',
+          onChanged: (bool value) => onChanged(settings.copyWith(rtl: value)),
+          child: const Text('Right to left'),
         ),
         SizedBox(height: theme.foundation.space16),
         Semantics(

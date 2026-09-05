@@ -86,7 +86,9 @@ Run the focused checks locally before opening a pull request:
 fvm flutter test \
   test/components/nemo_button_test.dart \
   test/components/nemo_surface_golden_test.dart \
-  test/components/nemo_switch_test.dart
+  test/components/nemo_switch_test.dart \
+  test/components/nemo_page_golden_test.dart \
+  test/components/nemo_canonical_scenes_golden_test.dart
 ```
 
 An intentional change uses `fvm flutter test --update-goldens <test-file>`.

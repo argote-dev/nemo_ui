@@ -121,8 +121,8 @@ The native Flutter Widget Previewer scenario is
 Canvas baseline. **Composition / Tactile glass overlay** shows the bounded
 opt-in finish. The example-app surface route is
 [`SurfaceCatalogPage`](../../example/lib/src/pages/surface_catalog_page.dart).
-The composed-workspace route demonstrates the finish in a realistic modal
-command palette without making it a persistent-surface default.
+The catalog-inspector route demonstrates the finish in a realistic modal
+inspector without making it a persistent-surface default.
 
 ## Test matrix
 
@@ -197,4 +197,5 @@ animated. Reduced motion reaches the same final hierarchy immediately. Surface
 continues to own no route, modal, focus, or dismissal behavior; compose it with
 Flutter's route and focus facilities. The example catalog's command palette
 shows focus containment, visible focus, Escape dismissal, modal semantics, and
-focus restoration.
+focus restoration. The catalog inspector scene is the canonical composed
+overlay evidence.

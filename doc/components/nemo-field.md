@@ -88,7 +88,8 @@ maximum form width.
 
 `example/previews/foundation_previews.dart` contains the native **Field states**
 preview. The example catalog exposes the **NemoField** route implemented by
-`example/lib/src/pages/field_catalog_page.dart`.
+`example/lib/src/pages/field_catalog_page.dart` and composes a recessed field
+in the **Settings** canonical scene.
 
 ## Test matrix
 

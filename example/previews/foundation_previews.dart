@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:nemo_ui/nemo_ui.dart';
 
+import 'package:nemo_ui_example/src/pages/catalog_inspector_page.dart';
+import 'package:nemo_ui_example/src/pages/settings_flow_page.dart';
+import 'package:nemo_ui_example/src/pages/work_dashboard_page.dart';
+
 /// Native Flutter Widget Previewer definitions for Nemo's foundation.
 @Preview(name: 'Light foundation', group: 'Foundation')
 Widget lightFoundationPreview() {
@@ -160,4 +164,23 @@ Widget tactileGlassOverlayPreview() => _FoundationPreview(
       child: Text('Transient command palette'),
     ),
   ),
+);
+
+/// Canonical work dashboard conformance scene.
+@Preview(name: 'Work dashboard', group: 'Canonical scenes')
+Widget workDashboardPreview() => _scenePreview(const WorkDashboardPage());
+
+/// Canonical settings-flow conformance scene.
+@Preview(name: 'Settings flow', group: 'Canonical scenes')
+Widget settingsFlowPreview() => _scenePreview(const SettingsFlowPage());
+
+/// Canonical catalog inspector conformance scene.
+@Preview(name: 'Catalog inspector', group: 'Canonical scenes')
+Widget catalogInspectorPreview() => _scenePreview(const CatalogInspectorPage());
+
+Widget _scenePreview(Widget home) => MaterialApp(
+  theme: ThemeData(
+    extensions: <ThemeExtension<dynamic>>[NemoThemeData.light()],
+  ),
+  home: home,
 );

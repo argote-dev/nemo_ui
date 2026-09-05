@@ -17,6 +17,9 @@
 - Add the opt-in `NemoSurfaceFinish.tactileGlass` treatment for transient
   `NemoMaterial.floating` overlays, including clipped backdrop and opaque
   high-contrast/Canvas fallback recipes.
+- Add three canonical conformance scenes to the example catalog: work dashboard,
+  settings flow, and catalog inspector/overlay, with light/dark/high-contrast
+  goldens and composed accessibility coverage.
 
 ### Changed
 
@@ -24,6 +27,9 @@
   transition. Button interpolates a complete tactile state; Switch coordinates
   track, thumb, relief, and indicator; Surface no longer animates static or
   theme-driven mutations unless callers opt into `NemoSurfaceTransition`.
+- Record renderer adoption from the capstone scenes: Canvas remains the default;
+  fragment stays experimental and default-off; tactile glass stays an opt-in
+  floating overlay. No device profile evidence is claimed.
 - **Breaking:** `NemoComponentTokens` now requires a `topBar` value of type
   `NemoTopBarTokens` when constructed directly.
 
